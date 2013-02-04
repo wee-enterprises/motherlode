@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="32" height="24" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="level" tilewidth="16" tileheight="16">
+  <image source="../img/level.png" width="96" height="96"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="rope"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="ladder"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="exit"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="wall"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="type" value="wall"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="type" value="wall"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="type" value="bedrock"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="type" value="bedrock"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="type" value="bedrock"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="hidden" value="true"/>
+    <property name="type" value="player"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="type" value="gold"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="hidden" value="true"/>
+    <property name="type" value="guard"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="type" value="torch"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="lvl_1" width="32" height="24" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYKANYKaRubSyX5nK8kPN/6P2owJK08NQ9/+o/eQDdiIw04C5DgIGs/2yBPi0sB/EJybecAF85QE2OWz20xOM2j907ZchQa0SAfuJSfO0xKNgYAEA7O0DCg==
+  </data>
+ </layer>
+ <layer name="lvl_test" width="32" height="24">
+  <data encoding="base64" compression="zlib">
+   eJztlMEKwCAIhm2dduoF1qX3f8idBiJmWjLZ6IefKLQvSwL4t45Adv4Q/yQuhlxPfkH24mdFbGHswcejVR78pORXgZ8G5tSAr7914mn/PdbcQS8Xe1aWN6C8itY9+dL9R9YvnWMkrv9W+FZJvRP5h8Pmbz6ZXxN7WP/dt7wVqxuGRART
+  </data>
+ </layer>
+</map>
