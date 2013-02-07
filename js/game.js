@@ -1,7 +1,11 @@
-var canvas       = document.getElementsByTagName('canvas')[0]
+var canvas       = document.createElement('canvas')
 ,   body         = document.body || document.getElementsByTagName('body')[0]
-,   ctx          = canvas.getContext('2d')
+,   tiles        = document.createElement('image')
+,   lvlData      = null
+,   currLvl      = 0
 ;
+body.appendChild(canvas);
+var ctx          = canvas.getContext('2d');
 
 //canvas.style.background = "#000";
 canvas.style.position = "absolute";
@@ -9,6 +13,20 @@ canvas.style.backgroundColor = "black";
 canvas.width = 512;
 canvas.height = 384;
 ctx.imageSmoothingEnabled = false;
+
+$.getJSON('data/level_data.json', function(data) {
+   lvlData = data;
+   tiles.onload = function() {
+	  var i,row;
+	  for(i=0; i<lvlData.layers[currLvl].data; i++) {
+		if(lvlData.layers[currLvl].data[i] === 0) { continue; }
+		
+		// why no reference to with tileset in the layer?
+	  }
+	  
+   };
+   tiles.src = "img/"+data.tilesets[0].image.replace(/.*\//,'');
+});
 
 var resize = function(evt) {
   var height = window.innerHeight || body.clientHeight
