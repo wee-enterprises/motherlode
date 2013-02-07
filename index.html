@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0,user-scalable=no,width=device-width" />
+
+<style>
+  html {
+	/* http://css-tricks.com/perfect-full-page-background-image/ */
+	background: url(img/bg.jpg) no-repeat center center fixed; 
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+  }
+  #gameContainer {
+	text-align: center;
+  }
+  canvas {
+	image-rendering: optimizeSpeed;             // Older versions of FF
+	image-rendering: -moz-crisp-edges;          // FF 6.0+
+	image-rendering: -webkit-optimize-contrast; // Webkit
+	//  (Safari now, Chrome soon)
+	image-rendering: optimize-contrast;         // Possible future browsers.
+	-ms-interpolation-mode: nearest-neighbor;   // IE
+  }
+  body {
+  }
+</style>
+</head>
+<body>
+  <canvas></canvas>
+  <script src="js/class.js"></script>
+  <script src="js/wee.js"></script>
+  <script src="js/keys.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
