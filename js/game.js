@@ -10,18 +10,35 @@ var ctx          = canvas.getContext('2d');
 //canvas.style.background = "#000";
 canvas.style.position = "absolute";
 canvas.style.backgroundColor = "black";
-canvas.width = 512;
-canvas.height = 384;
+//canvas.width = 512;
+//canvas.height = 384;
 ctx.imageSmoothingEnabled = false;
 
 $.getJSON('data/level_data.json', function(data) {
    lvlData = data;
+   canvas.width  = lvlData.width * lvlData.tilewidth;
+   canvas.height = lvlData.height * lvlData.tileheight;
+  resize();
    tiles.onload = function() {
-	  var i,row;
-	  for(i=0; i<lvlData.layers[currLvl].data; i++) {
+	  var i,row,data,numcols;
+	  
+	  numTileCols = lvlData.tilesets[0].imagewidth/lvlData.tilesets[0].tilewidth;
+	  
+	  for(i=0; i<lvlData.layers[currLvl].data.length; i++) {
 		if(lvlData.layers[currLvl].data[i] === 0) { continue; }
 		
 		// why no reference to with tileset in the layer?
+		ctx.drawImage(
+		  tiles,
+		  (lvlData.layers[currLvl].data[i] % numTileCols) * lvlData.tileheight,
+		  ((lvlData.layers[currLvl].data[i] / numTileCols)>>0) * lvlData.tileheight,
+		  lvlData.tilewidth,
+		  lvlData.tileheight,
+		  i % lvlData.height * lvlData.tileheight,
+		  ((i / lvlData.height)>>0) * lvlData.tileheight,
+		  lvlData.tilewidth,
+		  lvlData.tileheight
+		);
 	  }
 	  
    };
@@ -59,4 +76,3 @@ window.addEventListener('focus', function(e) {
 }, false);
 
 
-resize();
