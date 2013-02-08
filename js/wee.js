@@ -1,22 +1,23 @@
-var Wee = (function() {
-	var FPS=           60,
-		rate=          60,
-		frameCounter=  0,
-		dt=            1/60,
-		accrued=       0.0,
-		last=          Date.now()/1000,
-		cycleCounter=  0,
-		frameCounter=  0,
-		droppedFrames= 0,
-		interval=      null,
-		paused=        false,
-		initted=       false,
-		intervalRate=  Math.floor(1000/FPS) - 1,
-		ciCallback=    function(){},
-		upCallback=    function(){},
-		rdCallback=    function(){},
-		rdCallback=    function(){},
-		pauseCallback= function(){};
+define([], function(){
+	var FPS           = 60
+    ,   rate          = 60
+	,   frameCounter  = 0
+	,   dt            = 1/60
+	,   accrued       = 0.0
+	,   last          = Date.now()/1000
+	,   cycleCounter  = 0
+	,   frameCounter  = 0
+	,   droppedFrames = 0
+	,   interval      = null
+	,   paused        = false
+	,   initted       = false
+	,   intervalRate  = Math.floor(1000/FPS) - 1
+	,   ciCallback    = function(){}
+	,   upCallback    = function(){}
+	,   rdCallback    = function(){}
+	,   rdCallback    = function(){}
+	,   pauseCallback = function(){}
+    ;
 	
 	// Use this callback to latch your inputs if you want
 	// Kinda not useful cause you could latch em when you get the events
@@ -28,14 +29,14 @@ var Wee = (function() {
 	// will fire very rapidly. Don't waste much time in here at all!
 	// You can use this for collision detection etc. 
 	// Just check if you have already updated this render cycle and bail ASAP.
-	var Update=        function() {
+	var Update = function() {
 		frameCounter++;
 		droppedFrames++;
 		upCallback();
 	};
 		   
 	// This is the one you really want. Draw the result of your state in here.
-	var Render=        function() {
+	var Render = function() {
 		rate = (droppedFrames > 0) ? 
 			((rate+(FPS/(droppedFrames*2)))/2):
 			((rate + FPS)/2);
@@ -47,7 +48,7 @@ var Wee = (function() {
 		rdCallback();
 	}; 
 
-	var GameLoop=      function() {
+	var GameLoop = function() {
 		var now = Date.now()/1000;
 		accrued += (now-last);
 		
@@ -60,7 +61,7 @@ var Wee = (function() {
 		last = now;
 	};
 	
-	var Init=          function() {
+	var Init = function() {
 		if(!initted) {
 			console.log(this);
 			initted = true;
@@ -68,7 +69,7 @@ var Wee = (function() {
 	};
 	
 	// shim layer with setTimeout fallback
-	var requestAnimFrame= (function(){
+	var requestAnimFrame = (function(){
 		return  window.requestAnimationFrame       || 
 				window.webkitRequestAnimationFrame || 
 				window.mozRequestAnimationFrame    || 
@@ -76,7 +77,7 @@ var Wee = (function() {
 				window.msRequestAnimationFrame     
 	})();
 	
-	return me = {
+	return {
 		setFPS:          function(fps) {
 			FPS          = fps;
 			rate         = fps;
@@ -126,4 +127,4 @@ var Wee = (function() {
 			paused = true;
 		}
 	}; // public
-})();
+});
