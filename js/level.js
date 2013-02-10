@@ -1,7 +1,13 @@
-define(['shared', 'json!level_data'], function(Shared, levels) {
+define(
+	[
+		'zepto',
+		'shared',
+		'json!level_data'
+	],
+	function($, Shared, levels) {
 	var ret            = {}
 	,   currLvl        = 0
-	,   tiles          = Shared.tiles
+	,   currLvlData    = null
 	,   collisionTypes = ["wall", "bedrock"]
 	,   ladderTypes    = ["ladder", "exit"]
 	;
@@ -11,40 +17,43 @@ define(['shared', 'json!level_data'], function(Shared, levels) {
 	Shared.resize();
 	
 	ret.setLevel = function(level) {
-	  currLvl = level;
+		currLvl     = level;
+		
+		// copy the level for mutation + preservation
+		currLvlData = $.extend([], levels.layers[currLvl].data); 
 	}
 	
 	ret.render = function() {
-	  
-	  
-	  tiles.onload = function() {
-		 var i,row,data,numcols;
-		 
-		 data = levels.layers[currLvl].data;
-		 
-		 // number of tile cols in the tileset
-		 numcols = levels.tilesets[0].imagewidth/levels.tilesets[0].tilewidth;
-		 
-		 for(i=0; i<data.length; i++) {
-		   if(data[i] === 0) { continue; }
-		   
-		   // why no reference to with tileset in the layer?
-		   Shared.ctx.drawImage(
-			 tiles,
-			 ((data[i]-1) % numcols) * levels.tilewidth,
-			 ((data[i] / numcols)>>0) * levels.tileheight,
-			 levels.tilewidth,
-			 levels.tileheight,
-			 (i % levels.width) * levels.tilewidth,
-			 ((i / levels.width)>>0) * levels.tileheight,
-			 levels.tilewidth,
-			 levels.tileheight
-		   );
-		 }
-		 
-	  };
-	}
-	tiles.src = "img/"+levels.tilesets[0].image.replace(/.*\//,'');
+		var i,data,numcols,tiles,props;
+		
+		tiles = Shared.assets["img/level.png"];
+		data  = currLvlData;
+		
+		// number of tile cols in the tileset
+		numcols = levels.tilesets[0].imagewidth/levels.tilesets[0].tilewidth;
+		
+		for(i=0; i<data.length; i++) {
+			// tile properties are off by one (data[i])-1 is the ref!
+			props = levels.tilesets[0].tileproperties[data[i]-1];
+			
+			// bail if 0 (no tile) or hidden
+			if(data[i] === 0 || (props && props.hidden)) { continue; }
+			
+			// why no reference to tileset in the layer?
+			Shared.ctx.drawImage(
+				tiles,
+				((data[i]-1) % numcols) * levels.tilewidth,
+				((data[i] / numcols)>>0) * levels.tileheight,
+				levels.tilewidth,
+				levels.tileheight,
+				(i % levels.width) * levels.tilewidth,
+				((i / levels.width)>>0) * levels.tileheight,
+				levels.tilewidth,
+				levels.tileheight
+			);
+		}
+	};
 	
+	ret.setLevel(0); // Game should do this... but if it doesn't
 	return ret;
 });

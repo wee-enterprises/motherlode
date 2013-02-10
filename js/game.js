@@ -55,7 +55,15 @@ define('game',
    ///////////////////////////////////
    // MOTHERLODE!!!!!11!!1!1one1!one
    //////////////////////////////////
-   Level.render();
+   Shared.loadAssets(
+	  [
+		 'img/level.png'
+	  ],
+	  function(){
+		 // START-O
+		 console.log("finished loading assets");
+		 Level.render();
+	  });
 
    return ret;
 });
