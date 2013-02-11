@@ -33,6 +33,7 @@ define('game',
    function(Howl, Shared, Wee, Keys, Level, Player, Guard) {
    var ret    = {}
    ,   player = null
+   ,   guards = []
    ;
 
    ///////////////////
@@ -55,16 +56,16 @@ define('game',
    }, false);
 
    Keys.on('up', function() {
-	  player && player.move.up();
+	  player && player.up();
    });
    Keys.on('left', function() {
-	  player && player.move.left();
+	  player && player.left();
    });
    Keys.on('down', function() {
-	  player && player.move.down();
+	  player && player.down();
    });
    Keys.on('right', function() {
-	  player && player.move.right();
+	  player && player.right();
    });
    ///////////////////////////////////
    // MOTHERLODE!!!!!11!!1!1one1!one
@@ -77,10 +78,12 @@ define('game',
 	  function(){
 		 // START-O
 		 console.log("finished loading assets");
-		 Wee.setRender(function() { 
-			player = new Player();
+		 player = new Player();
+		 Wee.setRender(function() {
+			Shared.ctx.clearRect(0,0, Shared.canvas.width, Shared.canvas.height);
 			Level.render();
 			Keys.run();
+			player.render();
 			Shared;
 		 });
 		 

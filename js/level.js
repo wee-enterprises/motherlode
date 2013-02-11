@@ -56,6 +56,17 @@ define(
 		}
 	};
 	
+	ret.getPlayer = function() {
+		for(var i=0; i<currLvlData.length; i++) {
+			
+		}
+		return null;
+	};
+	
+	ret.getGuards = function() {
+		
+	};
+	
 	/**
 	 *
 	 */

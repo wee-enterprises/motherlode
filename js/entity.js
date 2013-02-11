@@ -35,11 +35,13 @@ define(['class', 'level'], function(Class, Level) {
 	  
 	}, // end init
 	render: function() {
-	  // this.anims[this.currAnim].render(this.loc.xpx, this.loc.xpy)
+	  if(this.currAnim) {
+		this.anims[this.currAnim].render(this.loc.xpx, this.loc.ypx);
+	  }
 	},
 	addAnim: function(name, anim) {
 	  // !instanceOf animation - throw && return
-	  // this.anims[name] = anim;
+	  this.anims[name] = anim;
 	}
   });
   
