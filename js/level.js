@@ -10,6 +10,8 @@ define(
 	,   currLvlData    = null
 	,   collisionTypes = ["wall", "bedrock"]
 	,   ladderTypes    = ["ladder", "exit"]
+	,   tileWidth      = levels.tilewidth
+	,   tileHeight     = levels.tileheight
 	;
 	
 	Shared.canvas.width  = levels.width * levels.tilewidth;
@@ -52,6 +54,20 @@ define(
 				levels.tileheight
 			);
 		}
+	};
+	
+	/**
+	 *
+	 */
+	ret.tileType = function(x,y) {
+		
+	};
+	
+	/**
+	 *
+	 */
+	ret.tileTypePx = function(x,y) {
+		
 	};
 	
 	ret.setLevel(0); // Game should do this... but if it doesn't

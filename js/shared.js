@@ -14,7 +14,6 @@ define([], function() {
   ret.canvas       = document.createElement('canvas');
   ret.ctx          = ret.canvas.getContext('2d');
   ret.body         = document.body || document.getElementsByTagName('body')[0];
-  ret.tiles        = document.createElement('image');
   ret.assets       = {};
   
   // add canvas
@@ -73,11 +72,13 @@ define([], function() {
 		  assetEle.addEventListener("load", function(){
 			yays++;
 			console.log(this.src+" loaded");
+			this.assetLoaded = true;
 			immaLetYouFinish();
 		  }, false);
 		  assetEle.addEventListener("error", function() {
 			nays++;
 			console.log(this.src+" did NOT load");
+			this.assetLoaded = false;
 			immaLetYouFinish();
 		  }, false);
 		  

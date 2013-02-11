@@ -109,7 +109,7 @@ define([], function(){
 			return paused;  
 		},
 		start:           function() {
-			Init();
+			//Init();
 			paused = false;
 			if(requestAnimFrame) {
 				(function animloop(){

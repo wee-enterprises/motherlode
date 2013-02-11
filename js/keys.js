@@ -1,11 +1,12 @@
 // TODO: move into Wee
-var Keys = (function(){  
+define([], function(){  
 	var ret      = {}
 	,   body     = document.getElementsByTagName('body')[0]
 	,   codes    = {
 			" ":      32
 		,   "left":   37
 		,   "up":     38
+		,   "down":  40 
 		,   "right":  39
 		,   "enter":  13
 		,   "escape": 27
@@ -64,4 +65,4 @@ var Keys = (function(){
 	};
 	
 	return ret;
-})();
+});
