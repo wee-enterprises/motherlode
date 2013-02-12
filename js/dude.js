@@ -25,6 +25,11 @@ define(['entity'], function(Entity) {
 	  };
 	  
 	  this.moveVertical = function(dir) {
+	  	if (dir === 'up') {
+	  		this.loc.ypx -= 1;
+	  	} else {
+	  		this.loc.ypx += 1;
+	  	}
 		  // if falling - return
 		  // if not on ladder tile - no
 		  // else
