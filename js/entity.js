@@ -23,8 +23,8 @@ define(['class', 'level'], function(Class, Level) {
 				this.loc.yt = params.yt || 0;
 
 				// derive pixel loc
-				this.log.xpx = (this.loc.xt + 0.5) * Level.getTileWidth();
-				this.log.ypx = (this.loc.yt + 0.5) * Level.getTileHeight();
+				this.loc.xpx = (this.loc.xt + 0.5) * Level.getTileWidth();
+				this.loc.ypx = (this.loc.yt + 0.5) * Level.getTileHeight();
 			} else {
 				this.loc.xpx = 0;
 				this.loc.ypx = 0;
@@ -54,11 +54,9 @@ define(['class', 'level'], function(Class, Level) {
 			this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
 				(Level.getTileWidth())) >> 0;
 
-			// DEBUG
-			var type = Level.getTileTypeAtPosition(this.loc.xt, this.loc.yt);
-			if (type) {
-				console.log("I'm touching a " + type);
-			}
+			// TODO for now it's debug, but we'll need to check this BEFORE we move
+			// if the collision is with something big and bad and non-moving
+			this.checkIfCollision();
 		},
 
 		setYPx: function(ypx) {
@@ -67,11 +65,56 @@ define(['class', 'level'], function(Class, Level) {
 			this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
 				(Level.getTileHeight())) >> 0;
 
-			// DEBUG
-			var type = Level.getTileTypeAtPosition(this.loc.xt, this.loc.yt);
-			if (type) {
-				console.log("I'm touching a " + type);
+			// TODO for now it's debug, but we'll need to check this BEFORE we move
+			// if the collision is with something big and bad and non-moving
+			this.checkIfCollision();
+		},
+
+		checkIfCollision: function() {
+			var topLeft, topRight, bottomLeft, bottomRight,
+				typeTopLeft, typeTopRight, typeBottomLeft, typeBottomRight;
+
+			topLeft = {
+				x: this.loc.xpx,
+				y: this.loc.ypx
+			};
+			topRight = {
+				x: this.loc.xpx + Level.getTileWidth(),
+				y: this.loc.ypx
+			};
+			bottomLeft = {
+				x: this.loc.xpx,
+				y: this.loc.ypx + Level.getTileHeight()
+			};
+			bottomRight = {
+				x: this.loc.xpx + Level.getTileWidth(),
+				y: this.loc.ypx + Level.getTileHeight()
+			};
+
+			typeTopLeft = Level.getTileTypeAtPosition(this.computeXT(topLeft.x), this.computeYT(topLeft.y));
+			if (typeTopLeft) {
+				console.log("I'm touching a " + typeTopLeft + " tl");
 			}
+			typeTopRight = Level.getTileTypeAtPosition(this.computeXT(topRight.x), this.computeYT(topRight.y));
+			if (typeTopRight) {
+				console.log("I'm touching a " + typeTopRight + " tr");
+			}
+			typeBottomLeft = Level.getTileTypeAtPosition(this.computeXT(bottomLeft.x), this.computeYT(bottomLeft.y));
+			if (typeBottomLeft) {
+				console.log("I'm touching a " + typeBottomLeft + " bl");
+			}
+			typeBottomRight = Level.getTileTypeAtPosition(this.computeXT(bottomRight.x), this.computeYT(bottomRight.y));
+			if (typeBottomRight) {
+				console.log("I'm touching a " + typeBottomRight + " br");
+			}
+		},
+
+		computeXT: function(xpx) {
+			return (xpx / (Level.getTileWidth())) >> 0;
+		},
+
+		computeYT: function(ypx) {
+			return (ypx / (Level.getTileHeight())) >> 0;
 		}
 	});
 
