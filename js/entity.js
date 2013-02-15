@@ -21,8 +21,8 @@ define(['class', 'level'], function(Class, Level) {
 		this.loc.yt = params.yt || 0;
 		
 		// derive pixel loc
-		this.log.xpx = (this.loc.xt + .5) * Level.tilewidth;
-		this.log.ypx = (this.loc.yt + .5) * Level.tileheight;
+		this.loc.xpx = (this.loc.xt + .5) * Level.tilewidth;
+		this.loc.ypx = (this.loc.yt + .5) * Level.tileheight;
 	  } else {
 		this.loc.xpx = 0;
 		this.loc.ypx = 0;

@@ -8,6 +8,8 @@ define(
 	var ret            = {}
 	,   currLvl        = 0
 	,   currLvlData    = null
+	,   entities       = []
+	,   entityTypes    = ["player", "guard", "torch"]
 	,   collisionTypes = ["wall", "bedrock"]
 	,   ladderTypes    = ["ladder", "exit"]
 	,   tileWidth      = levels.tilewidth
@@ -19,10 +21,27 @@ define(
 	Shared.resize();
 	
 	ret.setLevel = function(level) {
-		currLvl     = level;
+		var props = null;
+		currLvl   = level;
+		entities  = [];
 		
 		// copy the level for mutation + preservation
-		currLvlData = $.extend([], levels.layers[currLvl].data); 
+		currLvlData = $.extend([], levels.layers[currLvl].data);
+		
+		for(var i=0; i<currLvlData.length; i++) {
+			props = levels.tilesets[0].tileproperties[currLvlData[i]-1];
+			
+			if(props && entityTypes.indexOf(props.type) > -1) {
+				entities.push({
+					loc: {
+						xt: i % levels.width,
+						yt: (i / levels.width)>>0
+					},
+					props: props
+				});
+			}
+		}
+		
 	}
 	
 	ret.render = function() {
@@ -56,15 +75,8 @@ define(
 		}
 	};
 	
-	ret.getPlayer = function() {
-		for(var i=0; i<currLvlData.length; i++) {
-			
-		}
-		return null;
-	};
-	
-	ret.getGuards = function() {
-		
+	ret.getEntities = function() {
+		return entities;
 	};
 	
 	/**
