@@ -1,4 +1,6 @@
 define(['entity'], function(Entity) {
+	var PIXEL_MOVEMENT_AMOUNT = 2;
+
 	var ret = Entity.extend({
 		init: function(params) {
 			var States = ['still', 'still-ladder', 'left', 'right',
@@ -16,17 +18,17 @@ define(['entity'], function(Entity) {
 				//	if hole - falling, disable controls
 				//	else - move
 				if(dir === 'left') {
-					this.attemptSetXPx(this.loc.xpx - 1);
+					this.attemptSetXPx(this.loc.xpx - PIXEL_MOVEMENT_AMOUNT);
 				} else {
-					this.attemptSetXPx(this.loc.xpx + 1);
+					this.attemptSetXPx(this.loc.xpx + PIXEL_MOVEMENT_AMOUNT);
 				}
 			};
 
 			this.moveVertical = function(dir) {
 				if(dir === 'up') {
-					this.attemptSetYPx(this.loc.ypx - 1);
+					this.attemptSetYPx(this.loc.ypx - PIXEL_MOVEMENT_AMOUNT);
 				} else {
-					this.attemptSetYPx(this.loc.ypx + 1);
+					this.attemptSetYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
 				}
 				// if falling - return
 				// if not on ladder tile - no
@@ -65,11 +67,11 @@ define(['entity'], function(Entity) {
 
 		gravity: function() {
 			// get the touch types below us
-			var touchTypes = this.whatAmIGoingToTouch(this.loc.xpx, this.loc.ypx + 1);
+			var touchTypes = this.whatAmIGoingToTouch(this.loc.xpx, this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
 
 			// if it's not a collision, and it's not a ladder, move us down
 			if (!this.checkIfCollision(touchTypes) && !this.checkIfLadder(touchTypes)) {
-				this.setYPx(this.loc.ypx + 1);
+				this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
 			}
 		}
 	});

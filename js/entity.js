@@ -79,6 +79,8 @@ define(['class', 'level'], function(Class, Level) {
 			// we move up/down if we're moving to MOAR ladder
 			if (this.checkIfLadder(touchTypes)) {
 				this.setYPx(ypx);
+				// also center the xpx as we're going up the ladder
+				this.setXPx(this.centerJustifyXPx(this.loc.xt));
 				return;
 			}
 
@@ -100,6 +102,12 @@ define(['class', 'level'], function(Class, Level) {
 			// update the yt (y tile) based on the updated ypx (y pixel)
 			this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
 				(Level.getTileHeight())) >> 0;
+		},
+
+		centerJustifyXPx: function(xt) {
+			// based off the xt, return the center xpx
+			var center = (xt * Level.getTileWidth()) - (Level.getTileWidth >> 1);
+			return center;
 		},
 
 		checkIfCollision: function(touchTypes) {
@@ -136,16 +144,16 @@ define(['class', 'level'], function(Class, Level) {
 				y: newYPX
 			};
 			topRight = {
-				x: newXPX + Level.getTileWidth(),
+				x: newXPX + Level.getTileWidth() - 1,
 				y: newYPX
 			};
 			bottomLeft = {
 				x: newXPX,
-				y: newYPX + Level.getTileHeight()
+				y: newYPX + Level.getTileHeight() - 1
 			};
 			bottomRight = {
-				x: newXPX + Level.getTileWidth(),
-				y: newYPX + Level.getTileHeight()
+				x: newXPX + Level.getTileWidth() - 1,
+				y: newYPX + Level.getTileHeight() - 1
 			};
 
 			// we need to return something... what to do... what to do...
@@ -178,11 +186,11 @@ define(['class', 'level'], function(Class, Level) {
 		},
 
 		computeXT: function(xpx) {
-			return (xpx / (Level.getTileWidth())) >> 0;
+			return (xpx / Level.getTileWidth()) >> 0;
 		},
 
 		computeYT: function(ypx) {
-			return (ypx / (Level.getTileHeight())) >> 0;
+			return (ypx / Level.getTileHeight()) >> 0;
 		}
 	});
 
