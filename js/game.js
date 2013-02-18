@@ -83,6 +83,7 @@ define('game',
 			Shared.ctx.clearRect(0,0, Shared.canvas.width, Shared.canvas.height);
 			Level.render();
 			Keys.run();
+			player.gravity();
 			player.render();
 			Shared;
 		 });

@@ -12,6 +12,10 @@ define(
 	Shared.canvas.height = levels.height * levels.tileheight;
 	Shared.resize();
 
+	// probably easier to just initialize these in ret object...
+	ret.collisionTypes = collisionTypes;
+	ret.ladderTypes = ladderTypes;
+
 	ret.setLevel = function(level) {
 		currLvl = level;
 
@@ -107,8 +111,6 @@ define(
 			return undefined;
 		}
 	};
-
-	ret.getCollisionTypes = collisionTypes;
 
 	ret.setLevel(0); // Game should do this... but if it doesn't
 	return ret;

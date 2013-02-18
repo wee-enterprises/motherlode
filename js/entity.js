@@ -48,43 +48,83 @@ define(['class', 'level'], function(Class, Level) {
 			this.anims[name] = anim;
 		},
 
+		attemptSetXPx: function(xpx) {
+			// before we move, peek at where we're going
+			var touchTypes = this.whatAmIGoingToTouch(xpx, this.loc.ypx);
+
+			// as long as we're not colliding with a wall, we can move along the x axis
+			if (!this.checkIfCollision(touchTypes)) {
+				this.setXPx(xpx);
+			}
+		},
+
 		setXPx: function(xpx) {
-			// as long as we're not colliding with a wall, we can move
-			if (!this.checkIfCollision(xpx, this.loc.ypx)) {
-				this.loc.xpx = xpx;
-				// update the xt (x tile) based on the updated xpx (x pixel)
-				this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
-					(Level.getTileWidth())) >> 0;
+			this.loc.xpx = xpx;
+			// update the xt (x tile) based on the updated xpx (x pixel)
+			this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
+				(Level.getTileWidth())) >> 0;
+		},
+
+		attemptSetYPx: function(ypx) {
+			var touchTypes, currentType;
+
+			// before we move, peek at where we're going
+			touchTypes = this.whatAmIGoingToTouch(this.loc.xpx, ypx);
+
+			// if it's to a wall, stop here, we can't move
+			if (this.checkIfCollision(touchTypes)) {
+				return;
+			}
+
+			// we move up/down if we're moving to MOAR ladder
+			if (this.checkIfLadder(touchTypes)) {
+				this.setYPx(ypx);
+				return;
+			}
+
+			// or we're on the last rung, moving up
+			currentType = Level.getTileTypeAtPosition(this.loc.xt,
+				this.computeYT(this.loc.ypx + Level.getTileHeight()));
+			// verify we're on a ladder
+			if (Level.ladderTypes.indexOf(currentType) > -1) {
+				// verify we're attempting to move up
+				if (this.loc.ypx > ypx) {
+					// move us up!
+					this.setYPx(ypx);
+				}
 			}
 		},
 
 		setYPx: function(ypx) {
-			// as long as we're not colliding with a wall, we can move
-			if (!this.checkIfCollision(this.loc.xpx, ypx)) {
-				this.loc.ypx = ypx;
-				// update the yt (y tile) based on the updated ypx (y pixel)
-				this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
-					(Level.getTileHeight())) >> 0;
-			}
+			this.loc.ypx = ypx;
+			// update the yt (y tile) based on the updated ypx (y pixel)
+			this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
+				(Level.getTileHeight())) >> 0;
 		},
 
-		checkIfCollision: function(newXPX, newYPX) {
-			var counter;
-			var collide = false;
-			var touchTypes = this.whatAmIGoingToTouch(newXPX, newYPX);
+		checkIfCollision: function(touchTypes) {
+			return this.checkIfInTypes(touchTypes, Level.collisionTypes);
+		},
 
-			// if we _would_ touch something, verify it's type
+		checkIfLadder: function(touchTypes) {
+			return this.checkIfInTypes(touchTypes, Level.ladderTypes);
+		},
+
+		checkIfInTypes: function(touchTypes, verifyTypes) {
+			var counter;
+			var touchTypesContainsAVerifyType = false;
+
+			// check if the touch types contain something in verifyTypes
 			if (touchTypes && touchTypes.length > 0) {
-				// if it's something that we can't move into, mark it as such
 				for (counter=0; counter<touchTypes.length; counter++) {
-					if (Level.getCollisionTypes.indexOf(touchTypes[counter]) != -1) {
-						collide = true;
+					if (verifyTypes.indexOf(touchTypes[counter]) != -1) {
+						touchTypesContainsAVerifyType = true;
 						break;
 					}
 				}
 			}
 
-			return collide;
+			return touchTypesContainsAVerifyType;
 		},
 
 		whatAmIGoingToTouch: function(newXPX, newYPX) {
@@ -116,22 +156,22 @@ define(['class', 'level'], function(Class, Level) {
 			typeTopLeft = Level.getTileTypeAtPosition(this.computeXT(topLeft.x), this.computeYT(topLeft.y));
 			if (typeTopLeft) {
 				retArray.push(typeTopLeft);
-				console.log("I'm going to touch a " + typeTopLeft + " tl");
+				//console.log("I'm going to touch a " + typeTopLeft + " tl");
 			}
 			typeTopRight = Level.getTileTypeAtPosition(this.computeXT(topRight.x), this.computeYT(topRight.y));
 			if (typeTopRight) {
 				retArray.push(typeTopRight);
-				console.log("I'm going to touch a " + typeTopRight + " tr");
+				//console.log("I'm going to touch a " + typeTopRight + " tr");
 			}
 			typeBottomLeft = Level.getTileTypeAtPosition(this.computeXT(bottomLeft.x), this.computeYT(bottomLeft.y));
 			if (typeBottomLeft) {
 				retArray.push(typeBottomLeft);
-				console.log("I'm going to touch a " + typeBottomLeft + " bl");
+				//console.log("I'm going to touch a " + typeBottomLeft + " bl");
 			}
 			typeBottomRight = Level.getTileTypeAtPosition(this.computeXT(bottomRight.x), this.computeYT(bottomRight.y));
 			if (typeBottomRight) {
 				retArray.push(typeBottomRight);
-				console.log("I'm going to touch a " + typeBottomRight + " br");
+				//console.log("I'm going to touch a " + typeBottomRight + " br");
 			}
 
 			return retArray;

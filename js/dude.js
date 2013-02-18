@@ -16,17 +16,17 @@ define(['entity'], function(Entity) {
 				//	if hole - falling, disable controls
 				//	else - move
 				if(dir === 'left') {
-					this.setXPx(this.loc.xpx - 1);
+					this.attemptSetXPx(this.loc.xpx - 1);
 				} else {
-					this.setXPx(this.loc.xpx + 1);
+					this.attemptSetXPx(this.loc.xpx + 1);
 				}
 			};
 
 			this.moveVertical = function(dir) {
 				if(dir === 'up') {
-					this.setYPx(this.loc.ypx - 1);
+					this.attemptSetYPx(this.loc.ypx - 1);
 				} else {
-					this.setYPx(this.loc.ypx + 1);
+					this.attemptSetYPx(this.loc.ypx + 1);
 				}
 				// if falling - return
 				// if not on ladder tile - no
@@ -61,6 +61,16 @@ define(['entity'], function(Entity) {
 		},
 		digRight: function() {
 			this.dig('right');
+		},
+
+		gravity: function() {
+			// get the touch types below us
+			var touchTypes = this.whatAmIGoingToTouch(this.loc.xpx, this.loc.ypx + 1);
+
+			// if it's not a collision, and it's not a ladder, move us down
+			if (!this.checkIfCollision(touchTypes) && !this.checkIfLadder(touchTypes)) {
+				this.setYPx(this.loc.ypx + 1);
+			}
 		}
 	});
 
