@@ -33,7 +33,10 @@ define(['class', 'shared'], function(Class, Shared){
 	  
 	  if(++this.ctr % this.sequence[this.ptr] === 0) { // counter rollover 
 		this.ctr = 0;
-		this.ptr = (this.ptr+1) % this.sequence.length; 
+		this.ptr = (this.ptr+1) % this.sequence.length;
+		if(this.ptr === 0) {
+		  this.cb && this.cb();
+		}
 	  }
 	},
 	rewind: function() {

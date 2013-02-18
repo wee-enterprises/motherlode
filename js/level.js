@@ -1,14 +1,22 @@
 define(
-['zepto', 'shared', 'json!level_data'], function($, Shared, levels) {
-	var ret = {},
-		currLvl = 0,
-		currLvlData = null,
-		collisionTypes = ["wall", "bedrock"],
-		ladderTypes = ["ladder", "exit"],
-		tileWidth = levels.tilewidth,
-		tileHeight = levels.tileheight;
-
-	Shared.canvas.width = levels.width * levels.tilewidth;
+	[
+		'zepto',
+		'shared',
+		'json!level_data'
+	],
+	function($, Shared, levels) {
+	var ret            = {}
+	,   currLvl        = 0
+	,   currLvlData    = null
+	,   entities       = []
+	,   entityTypes    = ["player", "guard", "torch"]
+	,   collisionTypes = ["wall", "bedrock"]
+	,   ladderTypes    = ["ladder", "exit"]
+	,   tileWidth      = levels.tilewidth
+	,   tileHeight     = levels.tileheight
+	;
+	
+	Shared.canvas.width  = levels.width * levels.tilewidth;
 	Shared.canvas.height = levels.height * levels.tileheight;
 	Shared.resize();
 
@@ -17,12 +25,29 @@ define(
 	ret.ladderTypes = ladderTypes;
 
 	ret.setLevel = function(level) {
-		currLvl = level;
-
+		var props = null;
+		currLvl   = level;
+		entities  = [];
+		
 		// copy the level for mutation + preservation
 		currLvlData = $.extend([], levels.layers[currLvl].data);
+		
+		for(var i=0; i<currLvlData.length; i++) {
+			props = levels.tilesets[0].tileproperties[currLvlData[i]-1];
+			
+			if(props && entityTypes.indexOf(props.type) > -1) {
+				entities.push({
+					loc: {
+						xt: i % levels.width,
+						yt: (i / levels.width)>>0
+					},
+					props: props
+				});
+			}
+		}
+		
 	};
-
+	
 	ret.render = function() {
 		var i, data, numcols, tiles, props;
 
@@ -54,16 +79,9 @@ define(
 				levels.tileheight);
 		}
 	};
-
-	ret.getPlayer = function() {
-		for(var i = 0; i < currLvlData.length; i++) {
-
-		}
-		return null;
-	};
-
-	ret.getGuards = function() {
-
+	
+	ret.getEntities = function() {
+		return entities;
 	};
 
 	/**

@@ -28,9 +28,10 @@ define('game',
 	  'keys',
 	  'level',
 	  'player',
-	  'guard'
+	  'guard',
+	  'animSprite'
    ],
-   function(Howl, Shared, Wee, Keys, Level, Player, Guard) {
+   function(Howl, Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
    var ret    = {}
    ,   player = null
    ,   guards = []
@@ -73,15 +74,37 @@ define('game',
    Shared.loadAssets(
 	  [
 		 'img/level.png',
-		 'img/player.png'
+		 'img/player.png',
+		 'img/torch.png'
 	  ],
 	  function(){
+		 var i = 0
+		 ,   torches = []
+		 ;
+		 
 		 // START-O
 		 console.log("finished loading assets");
 		 player = new Player();
+		 Level.setLevel(0);
+		 
+		 for(i=0; i<Level.getEntities().length; i++) {
+			if(Level.getEntities()[i].props.type === "torch") {
+			   torches.push(new AnimSprite({
+				  xt: Level.getEntities()[i].loc.xt,
+				  yt: Level.getEntities()[i].loc.yt,
+				  sheetRef: 'img/torch.png',
+				  sequence: [9,10,12]
+			   }));
+			}
+		 }
+		 
 		 Wee.setRender(function() {
 			Shared.ctx.clearRect(0,0, Shared.canvas.width, Shared.canvas.height);
 			Level.render();
+			for(i=0; i<torches.length; i++) {
+			   torches[i].render();
+			}
+			//torch.render();
 			Keys.run();
 			player.gravity();
 			player.render();
