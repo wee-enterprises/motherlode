@@ -108,6 +108,8 @@ define(
 		}
 	};
 
+	ret.getCollisionTypes = collisionTypes;
+
 	ret.setLevel(0); // Game should do this... but if it doesn't
 	return ret;
 });

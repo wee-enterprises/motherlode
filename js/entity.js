@@ -49,64 +49,92 @@ define(['class', 'level'], function(Class, Level) {
 		},
 
 		setXPx: function(xpx) {
-			this.loc.xpx = xpx;
-			// update the xt (x tile) based on the updated xpx (x pixel)
-			this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
-				(Level.getTileWidth())) >> 0;
-
-			// TODO for now it's debug, but we'll need to check this BEFORE we move
-			// if the collision is with something big and bad and non-moving
-			this.checkIfCollision();
+			// as long as we're not colliding with a wall, we can move
+			if (!this.checkIfCollision(xpx, this.loc.ypx)) {
+				this.loc.xpx = xpx;
+				// update the xt (x tile) based on the updated xpx (x pixel)
+				this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
+					(Level.getTileWidth())) >> 0;
+			}
 		},
 
 		setYPx: function(ypx) {
-			this.loc.ypx = ypx;
-			// update the yt (y tile) based on the updated ypx (y pixel)
-			this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
-				(Level.getTileHeight())) >> 0;
-
-			// TODO for now it's debug, but we'll need to check this BEFORE we move
-			// if the collision is with something big and bad and non-moving
-			this.checkIfCollision();
+			// as long as we're not colliding with a wall, we can move
+			if (!this.checkIfCollision(this.loc.xpx, ypx)) {
+				this.loc.ypx = ypx;
+				// update the yt (y tile) based on the updated ypx (y pixel)
+				this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
+					(Level.getTileHeight())) >> 0;
+			}
 		},
 
-		checkIfCollision: function() {
+		checkIfCollision: function(newXPX, newYPX) {
+			var counter;
+			var collide = false;
+			var touchTypes = this.whatAmIGoingToTouch(newXPX, newYPX);
+
+			// if we _would_ touch something, verify it's type
+			if (touchTypes && touchTypes.length > 0) {
+				// if it's something that we can't move into, mark it as such
+				for (counter=0; counter<touchTypes.length; counter++) {
+					if (Level.getCollisionTypes.indexOf(touchTypes[counter]) != -1) {
+						collide = true;
+						break;
+					}
+				}
+			}
+
+			return collide;
+		},
+
+		whatAmIGoingToTouch: function(newXPX, newYPX) {
 			var topLeft, topRight, bottomLeft, bottomRight,
-				typeTopLeft, typeTopRight, typeBottomLeft, typeBottomRight;
+				typeTopLeft, typeTopRight, typeBottomLeft, typeBottomRight, retArray;
 
 			topLeft = {
-				x: this.loc.xpx,
-				y: this.loc.ypx
+				x: newXPX,
+				y: newYPX
 			};
 			topRight = {
-				x: this.loc.xpx + Level.getTileWidth(),
-				y: this.loc.ypx
+				x: newXPX + Level.getTileWidth(),
+				y: newYPX
 			};
 			bottomLeft = {
-				x: this.loc.xpx,
-				y: this.loc.ypx + Level.getTileHeight()
+				x: newXPX,
+				y: newYPX + Level.getTileHeight()
 			};
 			bottomRight = {
-				x: this.loc.xpx + Level.getTileWidth(),
-				y: this.loc.ypx + Level.getTileHeight()
+				x: newXPX + Level.getTileWidth(),
+				y: newYPX + Level.getTileHeight()
 			};
+
+			// we need to return something... what to do... what to do...
+			// I think for now let's return a list of the type of things
+			// we hit, ignoring the location. I'm not sure that's important (yet)
+			retArray = [];
 
 			typeTopLeft = Level.getTileTypeAtPosition(this.computeXT(topLeft.x), this.computeYT(topLeft.y));
 			if (typeTopLeft) {
-				console.log("I'm touching a " + typeTopLeft + " tl");
+				retArray.push(typeTopLeft);
+				console.log("I'm going to touch a " + typeTopLeft + " tl");
 			}
 			typeTopRight = Level.getTileTypeAtPosition(this.computeXT(topRight.x), this.computeYT(topRight.y));
 			if (typeTopRight) {
-				console.log("I'm touching a " + typeTopRight + " tr");
+				retArray.push(typeTopRight);
+				console.log("I'm going to touch a " + typeTopRight + " tr");
 			}
 			typeBottomLeft = Level.getTileTypeAtPosition(this.computeXT(bottomLeft.x), this.computeYT(bottomLeft.y));
 			if (typeBottomLeft) {
-				console.log("I'm touching a " + typeBottomLeft + " bl");
+				retArray.push(typeBottomLeft);
+				console.log("I'm going to touch a " + typeBottomLeft + " bl");
 			}
 			typeBottomRight = Level.getTileTypeAtPosition(this.computeXT(bottomRight.x), this.computeYT(bottomRight.y));
 			if (typeBottomRight) {
-				console.log("I'm touching a " + typeBottomRight + " br");
+				retArray.push(typeBottomRight);
+				console.log("I'm going to touch a " + typeBottomRight + " br");
 			}
+
+			return retArray;
 		},
 
 		computeXT: function(xpx) {
