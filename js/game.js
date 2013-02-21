@@ -85,7 +85,7 @@ define('game',
 		 // START-O
 		 console.log("finished loading assets");
 		 player = new Player();
-		 Level.setLevel(0);
+		 Level.setLevel(1);
 		 
 		 for(i=0; i<Level.getEntities().length; i++) {
 			if(Level.getEntities()[i].props.type === "torch") {
@@ -93,7 +93,7 @@ define('game',
 				  xt: Level.getEntities()[i].loc.xt,
 				  yt: Level.getEntities()[i].loc.yt,
 				  sheetRef: 'img/torch.png',
-				  sequence: [9,10,12]
+				  sequence: [(Math.random()*7+Math.random()*9)>>0,10,12]
 			   }));
 			}
 		 }
@@ -104,9 +104,8 @@ define('game',
 			for(i=0; i<torches.length; i++) {
 			   torches[i].render();
 			}
-			//torch.render();
 			Keys.run();
-			player.gravity();
+			player.update(); 
 			player.render();
 			Shared;
 		 });

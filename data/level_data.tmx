@@ -66,6 +66,7 @@
   </tile>
   <tile id="34">
    <properties>
+    <property name="hidden" value="true"/>
     <property name="type" value="torch"/>
    </properties>
   </tile>
@@ -77,7 +78,7 @@
  </layer>
  <layer name="lvl_test" width="32" height="24">
   <data encoding="base64" compression="zlib">
-   eJztlMEKwCAIhm2dduoF1qX3f8idBiJmWjLZ6IefKLQvSwL4t45Adv4Q/yQuhlxPfkH24mdFbGHswcejVR78pORXgZ8G5tSAr7914mn/PdbcQS8Xe1aWN6C8itY9+dL9R9YvnWMkrv9W+FZJvRP5h8Pmbz6ZXxN7WP/dt7wVqxuGRART
+   eJztlUsOgCAMBYusXHEB2eD97+jKpBJaeFhtYpzkxYSPI9AI0bdZHN3R2L+D7Yh/rZKAuRIz/sRi5Y8DY1MjFn7+RLHwh0F/VvyhkxaF2usvwvi6/s6M7IE0l2cW5AxqX2btln5t/z3Xr31Hj1b93fGjaLXjeYcQ6Jfugl6flf8Jfv+VbeId6H/3rfz4cgB3fATf
   </data>
  </layer>
 </map>
