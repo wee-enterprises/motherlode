@@ -32,9 +32,10 @@ define('game',
 	  'animSprite'
    ],
    function(Howl, Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
-   var ret    = {}
-   ,   player = null
-   ,   guards = []
+   var ret     = {}
+   ,   player  = null
+   ,   guards  = []
+   ,   torches = []
    ;
 
    ///////////////////
@@ -78,24 +79,39 @@ define('game',
 		 'img/torch.png'
 	  ],
 	  function(){
+		 Level.setLevel(1);
 		 var i = 0
-		 ,   torches = []
+                 ,   ents    = Level.getEntities()
+                 ,   currLoc = null
 		 ;
 		 
 		 // START-O
 		 console.log("finished loading assets");
-		 player = new Player();
-		 Level.setLevel(1);
 		 
-		 for(i=0; i<Level.getEntities().length; i++) {
-			if(Level.getEntities()[i].props.type === "torch") {
-			   torches.push(new AnimSprite({
-				  xt: Level.getEntities()[i].loc.xt,
-				  yt: Level.getEntities()[i].loc.yt,
-				  sheetRef: 'img/torch.png',
-				  sequence: [(Math.random()*7+Math.random()*9)>>0,10,12]
-			   }));
-			}
+		 for(i=0; i<ents.length; i++) {
+                     currLoc = ents[i].loc;
+                     switch (ents[i].props.type) {
+                        case "torch":
+                           torches.push(new AnimSprite({
+                              xt: currLoc.xt,
+			      yt: currLoc.yt,
+			      sheetRef: 'img/torch.png',
+			      sequence: [(Math.random()*7+Math.random()*9)>>0,10,12]
+			   }));                           
+                           break;
+                        case "player":
+                           player = new Player({
+                              xt: currLoc.xt,
+                              yt: currLoc.yt
+                           });
+                           break;
+                        case "guard":
+                           guards.push(new Guard({
+                              xt: currLoc.xt,
+                              yt: currLoc.yt                           
+                           }));
+                           break;
+                     }
 		 }
 		 
 		 Wee.setRender(function() {
@@ -107,6 +123,9 @@ define('game',
 			Keys.run();
 			player.update(); 
 			player.render();
+                        for (i=0; i<guards.length; i++) {
+                           guards[i].render();
+                        }
 			Shared;
 		 });
 		 
