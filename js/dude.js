@@ -1,4 +1,4 @@
-define(['entity', 'level'], function(Entity, Level) {
+define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
 	var PIXEL_MOVEMENT_AMOUNT = 2;
 
 	var ret = Entity.extend({
@@ -69,13 +69,27 @@ define(['entity', 'level'], function(Entity, Level) {
 			this.gravity();
 		},
 		attemptSetXPx: function(xpx) {
+			// make sure he's not trying to run off the screen
+			// x boundaries are 0 and canvas.width
+			// don't go off the screen to the left
+			if (xpx < 0) {
+				return;
+			}
+			// don't go off the screen to the right
+			if (xpx > Shared.canvas.width) {
+				return;
+			}
+
 			// before we move, peek at where we're going
 			var touchTypes = this.getEnvMap(xpx, this.loc.ypx);
 
-			// as long as we're not colliding with a wall, we can move along the x axis
-			if (!this.checkIfCollision(touchTypes)) {
-				this.setXPx(xpx);
+			// if we're going to hit a wall, don't allow the movement
+			if (this.checkIfCollision(touchTypes)) {
+				return;
 			}
+
+			// if we've passed all our checks, move us
+			this.setXPx(xpx);
 		},
 
 		setXPx: function(xpx) {
