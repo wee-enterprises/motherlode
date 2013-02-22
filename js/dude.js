@@ -1,5 +1,5 @@
 define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
-	var PIXEL_MOVEMENT_AMOUNT = 2;
+	var PIXEL_MOVEMENT_AMOUNT = 1;
 
 	var ret = Entity.extend({
 		init: function(params) {
@@ -138,6 +138,17 @@ define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
 					this.setYPx(ypx);
 				}
 			}
+
+			// OR... or... yeah... "or" ONE MORE TIME!
+			// if yer on one of them rope things and you
+			// wanna move down off of it, you can
+			if (this.checkIfRope(touchTypes)) {
+				// verify we're trying to move down
+				if (this.loc.ypx < ypx) {
+					// move us down by one (this will probably cause us pain later...)
+					this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
+				}
+			}
 		},
 
 		setYPx: function(ypx) {
@@ -159,6 +170,10 @@ define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
 
 		checkIfLadder: function(touchTypes) {
 			return this.checkIfInTypes(touchTypes, Level.ladderTypes);
+		},
+
+		checkIfRope: function(touchTypes) {
+			return this.checkIfInTypes(touchTypes, ["rope"]);
 		},
 
 		checkIfInTypes: function(touchTypes, verifyTypes) {
@@ -237,13 +252,30 @@ define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
 		},
 		
 		gravity: function() {
-			// get the touch types below us
-			var touchTypes = this.getEnvMap(this.loc.xpx, this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
+			var touchTypes, touchType;
 
-			// if it's not a collision, and it's not a ladder, move us down
-			if (!this.checkIfCollision(touchTypes) && !this.checkIfLadder(touchTypes)) {
-				this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
+			// get the touch types below us
+			touchTypes = this.getEnvMap(this.loc.xpx, this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
+
+			// if it's a collision, or it's a ladder, no gravity!!
+			if (this.checkIfCollision(touchTypes) || this.checkIfLadder(touchTypes)) {
+				return;
 			}
+
+			// get the touch type above us
+			touchType = Level.getTileTypeAtPosition(this.computeXT(this.loc.xpx), this.computeYT(this.loc.ypx));
+
+			// if there's a rope above us, and we're at the TOP of this tile, no gravity!
+			if (touchType && touchType === "rope") {
+				// are we at the top of this tile?
+				if ((this.loc.ypx % Level.getTileHeight()) === 0) {
+					// no gravity
+					return;
+				}
+			}
+
+			// otherwise, gravity!!
+			this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
 		}
 	});
 
