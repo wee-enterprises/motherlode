@@ -125,6 +125,15 @@ define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
 			if (Level.ladderTypes.indexOf(currentType) > -1) {
 				// verify we're attempting to move up
 				if (this.loc.ypx > ypx) {
+					// WAIT! This is a potential WIN scenario
+					// if this is a win ladder, we've WON!
+					if (currentType === "exit") {
+						// TODO make this prettier
+						console.log("YOU WON!");
+						setTimeout(function() {
+							location.reload();
+						}, 1000);
+					}
 					// move us up!
 					this.setYPx(ypx);
 				}
