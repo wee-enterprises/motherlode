@@ -14,6 +14,7 @@
   </tile>
   <tile id="2">
    <properties>
+    <property name="hidden" value="true"/>
     <property name="type" value="exit"/>
    </properties>
   </tile>
@@ -55,7 +56,19 @@
   </tile>
   <tile id="28">
    <properties>
+    <property name="hidden" value="true"/>
     <property name="type" value="gold"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="norender" value="true"/>
+    <property name="type" value="occupied"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="type" value="wall"/>
    </properties>
   </tile>
   <tile id="33">
@@ -71,14 +84,14 @@
    </properties>
   </tile>
  </tileset>
- <layer name="lvl_1" width="32" height="24" visible="0">
+ <layer name="lvl_1" width="32" height="24">
   <data encoding="base64" compression="zlib">
-   eJxjYKANYKaRubSyX5nK8kPN/6P2owJK08NQ9/+o/eQDdiIw04C5DgIGs/2yBPi0sB/EJybecAF85QE2OWz20xOM2j907ZchQa0SAfuJSfO0xKNgYAEA7O0DCg==
+   eJxjYKANYKaRubSyX5nK8kPN/6P2owJK08NQ9/+o/eQDdiIw04C5DgIGs/2yBPi0sB/EJybecAF85QE2OWz20xOM2j907ZchQa0SAfuJSfO0xLwDjEc6AAD4SwSq
   </data>
  </layer>
- <layer name="lvl_test" width="32" height="24">
+ <layer name="lvl_test" width="32" height="24" visible="0">
   <data encoding="base64" compression="zlib">
-   eJztlUsOgCAMBYusXHEB2eD97+jKpBJaeFhtYpzkxYSPI9AI0bdZHN3R2L+D7Yh/rZKAuRIz/sRi5Y8DY1MjFn7+RLHwh0F/VvyhkxaF2usvwvi6/s6M7IE0l2cW5AxqX2btln5t/z3Xr31Hj1b93fGjaLXjeYcQ6Jfugl6flf8Jfv+VbeId6H/3rfz4cgB3fATf
+   eJztlUEOgCAMBIucPPEBueD//+jJpJIWWKyQqJNsTBAcwcYSvZtlotsb+3dwHPGvWQKwVqPHH1is/L5hbhBi4edXFAu/a/THgt9VIpFI3n9S5uf1d6blDLS1PL0g3yD3RTZu6S+d/8z9l96jhlR/d/wopdqZ2UMI9Gu9oHbPyv8Ev//K1vEM9L87KlLfHZmvcwDTWga/
   </data>
  </layer>
 </map>

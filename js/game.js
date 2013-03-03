@@ -22,7 +22,6 @@ requirejs.config({
 
 define('game',
    [
-	  'howler',
 	  'shared',
 	  'wee',
 	  'keys',
@@ -31,13 +30,54 @@ define('game',
 	  'guard',
 	  'animSprite'
    ],
-   function(Howl, Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
+function(Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
    var ret     = {}
    ,   player  = null
    ,   guards  = []
    ,   torches = []
    ;
 
+   function initLevel(lvl) {
+	  Level.setLevel(lvl);
+	  Shared.goldCount = 0;
+	  Shared.entities = [];
+	  
+	  var i = 0
+	  ,   currItem = null
+	  ,   ents     = Level.getEntities()
+	  ,   confObj  = {}
+	  ;
+		 
+	  // START-O
+		 
+	  for(i=0; i<ents.length; i++) {
+		 confObj = {};
+		 confObj.xt = ents[i].loc.xt;
+		 confObj.yt = ents[i].loc.yt;
+		 confObj.props = ents[i].props || {};
+		 
+		 switch (ents[i].props.type) {
+			case "torch":
+			   confObj.sheet = 'img/torch.png';
+			   confObj.sequence = [(Math.random()*7+Math.random()*9)>>0,10,12];
+			   Shared.entities.push(new AnimSprite(confObj));
+			break;
+			case "gold":
+			   confObj.sheet = 'img/level.png';
+			   confObj.sequence = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1];
+			   Shared.entities.push(new AnimSprite(confObj));
+			   Shared.goldCount++;
+			break;
+		 	case "guard":
+			   Shared.entities.push(new Guard(confObj));
+			break;
+			case "player":
+			   Shared.player = new Player(confObj);
+			break;
+         }
+	  }
+   } // end initLevel
+   
    ///////////////////
    // BROWSER EVENTS
    ///////////////////
@@ -46,28 +86,35 @@ define('game',
    // TODO: move into Wee with enablement flag
    window.addEventListener('blur', function(e) {
 	 if(!Wee.paused()) {
-	   //console.log('pause');
-	   Wee.pause();
+		 Wee.pause();
 	 }
+	 Shared.sounds.level.pause();
    }, false);
    window.addEventListener('focus', function(e) {
 	 if(Wee.paused()) {
-	   //console.log('resume');
-	   Wee.start();
+		 Wee.start();
 	 }
+	 //Shared.sounds.level.pause(); // try to prevent duplication 
+	 //Shared.sounds.level.play();
    }, false);
 
-   Keys.on('up', function() {
-	  player && player.up();
+   Keys.on('w', function() {
+	  Shared.player && Shared.player.up();
    });
-   Keys.on('left', function() {
-	  player && player.left();
+   Keys.on('a', function() {
+	  Shared.player && Shared.player.left();
    });
-   Keys.on('down', function() {
-	  player && player.down();
+   Keys.on('s', function() {
+	  Shared.player && Shared.player.down();
    });
-   Keys.on('right', function() {
-	  player && player.right();
+   Keys.on('d', function() {
+	  Shared.player && Shared.player.right();
+   });
+   Keys.on('q', function() {
+	  Shared.player && Shared.player.digLeft();
+   });
+   Keys.on('e', function() {
+	  Shared.player && Shared.player.digRight();
    });
    ///////////////////////////////////
    // MOTHERLODE!!!!!11!!1!1one1!one
@@ -79,54 +126,30 @@ define('game',
 		 'img/torch.png'
 	  ],
 	  function(){
-		 Level.setLevel(1);
-		 var i = 0
-                 ,   ents    = Level.getEntities()
-                 ,   currLoc = null
-		 ;
-		 
-		 // START-O
-		 console.log("finished loading assets");
-		 
-		 for(i=0; i<ents.length; i++) {
-                     currLoc = ents[i].loc;
-                     switch (ents[i].props.type) {
-                        case "torch":
-                           torches.push(new AnimSprite({
-                              xt: currLoc.xt,
-			      yt: currLoc.yt,
-			      sheetRef: 'img/torch.png',
-			      sequence: [(Math.random()*7+Math.random()*9)>>0,10,12]
-			   }));                           
-                           break;
-                        case "player":
-                           player = new Player({
-                              xt: currLoc.xt,
-                              yt: currLoc.yt
-                           });
-                           break;
-                        case "guard":
-                           guards.push(new Guard({
-                              xt: currLoc.xt,
-                              yt: currLoc.yt                           
-                           }));
-                           break;
-                     }
-		 }
+		 //Shared.sounds.level.play();
+		 initLevel(0);
 		 
 		 Wee.setRender(function() {
+			
+			if (Shared.player.state === 'winning') {
+			   initLevel(Level.nextLevel());
+			}
+			
 			Shared.ctx.clearRect(0,0, Shared.canvas.width, Shared.canvas.height);
 			Level.render();
-			for(i=0; i<torches.length; i++) {
-			   torches[i].render();
-			}
 			Keys.run();
-			player.update(); 
-			player.render();
-                        for (i=0; i<guards.length; i++) {
-                           guards[i].render();
-                        }
-			Shared;
+			
+			for (i=0; i<Shared.entities.length; i++) {
+			   Shared.entities[i].update();
+			   Shared.entities[i].render();
+			}
+			
+			Shared.player.update(); 
+			Shared.player.render();
+			
+			if (Shared.goldCount <= 0) {
+			   Level.showExit();
+			}
 		 });
 		 
 		 Wee.start();
@@ -135,4 +158,4 @@ define('game',
    return ret;
 });
 
-require(['game'], function(){});
+require(['game', 'shared'], function(){});

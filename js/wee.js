@@ -77,6 +77,15 @@ define([], function(){
 				window.msRequestAnimationFrame     
 	})();
 	
+	var cancelAnimFrame = (function(){
+		return  window.cancelAnimationFrame       || 
+				window.webkitCancelAnimationFrame || 
+				window.mozCancelAnimationFrame    || 
+				window.oCancelAnimationFrame      || 
+				window.msRequestAnimationFrame     
+	})();
+	
+	
 	return {
 		setFPS:          function(fps) {
 			FPS          = fps;
@@ -114,7 +123,7 @@ define([], function(){
 			if(requestAnimFrame) {
 				(function animloop(){
 					if(!paused) {
-						requestAnimFrame(animloop);
+						interval = requestAnimFrame(animloop);
 						GameLoop();                          
 					}
 				})();
@@ -124,6 +133,7 @@ define([], function(){
 		},
 		pause:           function() {
 			if(interval) { clearInterval(interval); }
+			if(requestAnimFrame) { cancelAnimFrame(interval); }
 			paused = true;
 		}
 	}; // public
