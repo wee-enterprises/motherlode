@@ -18,7 +18,21 @@ define(['class', 'shared'], function(Class, Shared){
 	  this.ctr = 0; // sequence element counter
 	  this.ptr = 0; // sequence index
 	},
-	render: function(x,y) {
+	render: function(x,y,flip) {
+	  
+	  // skip 0 frame sequences
+	  while (this.sequence[this.ptr] === 0) {
+		this.ctr = 0;
+		this.ptr++;
+	  }
+	  
+	  Shared.ctx.save();
+	  if (flip) {
+		Shared.ctx.translate(Shared.canvas.width, 0);
+		Shared.ctx.scale(-1,1);
+		x = Shared.canvas.width - x - this.dims.x;
+	  }
+	  
 	  Shared.ctx.drawImage(
 		this.sheet,
 		((this.ptr) % this.sheetCols) * this.dims.x,
@@ -30,6 +44,7 @@ define(['class', 'shared'], function(Class, Shared){
 		this.dims.x,
 		this.dims.y
 	  );
+	  Shared.ctx.restore();
 	  
 	  if(++this.ctr % this.sequence[this.ptr] === 0) { // counter rollover 
 		this.ctr = 0;

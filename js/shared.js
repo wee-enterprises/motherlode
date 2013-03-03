@@ -1,4 +1,4 @@
-define([], function() {
+define(['howler'], function(Howl) {
   var ret       = {}
   ,   i         = 0
   ,   j         = 0
@@ -8,13 +8,35 @@ define([], function() {
       }
   ;
   
+  
   ////////////
   // MEMBERS
   ////////////
-  ret.canvas       = document.createElement('canvas');
-  ret.ctx          = ret.canvas.getContext('2d');
-  ret.body         = document.body || document.getElementsByTagName('body')[0];
-  ret.assets       = {};
+  ret.Howler        = Howl;
+  ret.canvas        = document.createElement('canvas');
+  ret.ctx           = ret.canvas.getContext('2d');
+  ret.body          = document.body || document.getElementsByTagName('body')[0];
+  ret.assets        = {};
+  ret.player        = null;
+  ret.entities      = [];
+  ret.goldCount     = 0;
+  ret.sounds        = {
+	gold: new Howl({
+	  urls: ['sound/gold.ogg','sound/gold.mp3','sound/gold.wav']
+	}),
+	die: new Howl({
+	  urls: ['sound/die.ogg', 'sound/die.mp3']
+	}),
+	level: new Howl({
+	  urls: ['sound/DST-GreenSky.ogg', 'sound/DST-GreenSky.mp3'],
+	  loop: true
+	})
+  };
+   
+  //-- set the volume
+  for (i in ret.sounds) {
+	ret.sounds[i].volume(.02);
+  }
   
   // add canvas
   ret.body.appendChild(ret.canvas);
@@ -24,7 +46,7 @@ define([], function() {
   ret.canvas.height = 1;
   ret.canvas.style.position = "absolute";
   ret.canvas.style.backgroundColor = "black";
-  ret.ctx.imageSmoothingEnabled = false;
+  //ret.ctx.imageSmoothingEnabled = false;
   
   /////////////
   // FUNKSHUNS
@@ -45,6 +67,22 @@ define([], function() {
 	ret.canvas.style.left = (ret.canvas.width*(scale-1)>>1)+((width-ret.canvas.width*scale)>>1)+"px";
   };
   
+  ret.pickupGold = function (xt, yt) {
+	var i    = 0
+	,   curr = null
+	;
+	
+	for (i=0; i<ret.entities.length; i++) {
+	  curr = ret.entities[i];
+	  if (curr.props && curr.props.type === "gold" && curr.loc.xt === xt && curr.loc.yt === yt) {
+		console.log("removing gold: "+curr.loc.xt+", "+curr.loc.yt);
+		ret.sounds.gold.play();
+		ret.entities.splice(i, 1);
+		ret.goldCount --;
+	  }
+	}
+  };
+
   // http://www.html5rocks.com/en/tutorials/games/assetmanager/
   ret.loadAssets = function(assets, cb) {
 	var assetEle = null // ( . )( . )
@@ -54,9 +92,9 @@ define([], function() {
 	;
   
 	function immaLetYouFinish() {
-	  console.log("{total: "+total+", yays: "+yays+", nays: "+nays+"}");
+	  //console.log("{total: "+total+", yays: "+yays+", nays: "+nays+"}");
 	  if(total > yays+nays) {
-		console.log("imma let you finish");
+		//console.log("imma let you finish");
 		return;
 	  }
 	  cb && cb();
@@ -87,6 +125,6 @@ define([], function() {
 	  }
 	}
   };
-  
   return ret;
+  //return ret;
 });

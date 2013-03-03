@@ -1,282 +1,337 @@
-define(['entity', 'level', 'shared'], function(Entity, Level, Shared) {
-	var PIXEL_MOVEMENT_AMOUNT = 1;
-
+define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Hole) {
+	var TypeMatch = {
+			ladder: /ladder|exit/,
+			fallstop: /wall|bedrock|ladder|occupied/,
+			collision: /wall|bedrock|occupied/
+		},
+		TouchTypes = ['guard', 'gold', 'player'], // entities that are interesting when I touch them =X
+		Action = {
+			//null: "not moving"
+			left: "left",
+			matchLeft: /left/,
+			right: "right",
+			matchRight: /right/,
+			up: "up",
+			matchUp: /up/,
+			down: "down",
+			matchDown: /down/,
+			
+			matchLateral: /left|right/,
+			matchVertical: /up|down/,
+			
+			digLeft: "digLeft",
+			matchDigLeft: /digLeft/,
+			digRight: "digRight",
+			matchDigRight: /digRight/,
+			matchDig: /dig/
+		},
+	    Boundary = { // based on top-left of sprite
+			left:  3,
+			right: 13,
+			up:    0,
+			down:  16
+		};
+		
 	var ret = Entity.extend({
 		init: function(params) {
-			var States = ['still', 'still-ladder', 'left', 'right',
-			'up', 'down', 'falling', 'roping-left', 'roping-right',
-			'dying', 'winning', 'dig-left', 'dig-right'];
+			params.bounds = Boundary;
 			this._super(params);
-			this.moveLateral = function(dir) {
-				// if falling - return
-				// else
-				//	check desired new location
-				//	if collision - return
-				//	if ladder
-				//		if platform tile - center dude on edge of platform tile
-				//		else falling
-				//	if hole - falling, disable controls
-				//	else - move
-				if(dir === 'left') {
-					this.attemptSetXPx(this.loc.xpx - PIXEL_MOVEMENT_AMOUNT);
-				} else {
-					this.attemptSetXPx(this.loc.xpx + PIXEL_MOVEMENT_AMOUNT);
-				}
+			this.latch     = ""; // movement latch
+			this.accX      = 0;
+			this.accY      = 0;
+			this.colliding = false;
+			this.touching  = [];
+			this.golds     = 0;
+			
+			this.States = {
+				climbing: 'climbing',
+				running: 'running',
+				roping: 'roping',
+				digging: 'digging',
+				falling: 'falling',
+				holed: 'holed',
+				still: 'still',
+				dying: 'dying',
+				dead: 'dead',
+				winning: 'winning',
+				finished: 'finished'
 			};
-
-			this.moveVertical = function(dir) {
-				if(dir === 'up') {
-					this.attemptSetYPx(this.loc.ypx - PIXEL_MOVEMENT_AMOUNT);
-				} else {
-					this.attemptSetYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
-				}
-				// if falling - return
-				// if not on ladder tile - no
-				// else
-				//	if collision || (top of ladder && up) - return
-				//	else
-				//		if bottom of ladder && down - standing
-				//		else - move
-				//
+			this.lastState = this.States.still;
+			this.state     = this.States.still;
+			
+			
+			this.Acc = {
+				inc: 0.4,
+				dec: 0.6,
+				max: 2,
+				gravity: 0.6,
+				maxGravity: 4
 			};
-
-			this.dig = function(dir) {
-				// get target tile
-				// if !diggable - return
-				// dig
-			};
+		},
+		setAcc: function (newAcc) {
+			this.Acc = newAcc;
 		},
 		left: function() {
-			this.moveLateral('left');
+			this.latch += Action.left;
 		},
 		right: function() {
-			this.moveLateral('right');
+			this.latch += Action.right;
 		},
 		up: function() {
-			this.moveVertical('up');
+			this.latch += Action.up;
 		},
 		down: function() {
-			this.moveVertical('down');
+			this.latch += Action.down;
 		},
 		digLeft: function() {
-			this.dig('left');
+			this.latch += Action.digLeft;
 		},
 		digRight: function() {
-			this.dig('right');
+			this.latch += Action.digRight;
 		},
-		
+		setState: function (state) {
+			this.lastState = this.state;
+			this.state = state;
+		},
+		reset: function () {
+		},
+		doDig: function (dir) {
+			var hole = {
+				y: this.loc.yt + 1
+			};
+			hole.x = (dir === 'left') ? this.loc.xt - 1 : this.loc.xt + 1;
+			Level.createHole(hole.x, hole.y);
+			Shared.entities.push(new Hole({
+				xt: hole.x,
+				yt: hole.y,
+				props: {
+					type: "hole"
+				}
+			}));
+		},
+		doDecel: function name(args) {
+			if (!Action.matchLateral.test(this.latch)) {
+				//not pressing left or right
+				if (this.accX === 0) { // short circuit
+				} else if (this.accX > 0) {
+					this.accX = (this.accX - this.Acc.dec > 0) ? this.accX - this.Acc.dec : 0;
+				} else {
+					this.accX = (this.accX + this.Acc.dec < 0) ? this.accX + this.Acc.dec : 0;
+				}
+			}
+			if (!Action.matchVertical.test(this.latch) && this.state !== this.States.falling) {
+				//not pressing left or right
+				if (this.accY === 0) { // short circuit
+				} else if (this.accY > 0) {
+					this.accY = (this.accY - this.Acc.dec > 0) ? this.accY - this.Acc.dec : 0;
+				} else {
+					this.accY = (this.accY + this.Acc.dec < 0) ? this.accY + this.Acc.dec : 0;
+				}
+			}
+		},
+		/**
+		 * checks collisions with level and entities, affects state
+		 */
 		update: function() {
-			this.gravity();
-		},
-		attemptSetXPx: function(xpx) {
-			// make sure he's not trying to run off the screen
-			// x boundaries are 0 and canvas.width
-			// don't go off the screen to the left
-			if (xpx < 0) {
-				return;
+			var newLocPx = {
+					x: this.loc.xpx,
+					y: this.loc.ypx
+			    }
+			,   newLoc  = null
+			,   newAccX = this.accX
+			,   newAccY = this.accY
+			,   currTiles = []
+			,   nextTiles = []
+			,   i         = 0
+			;
+			
+			this.reset();
+
+			switch (true) {
+				case Action.matchLeft.test(this.latch):
+					newAccX = (Math.abs(newAccX - this.Acc.inc) > this.Acc.max) ? -1* this.Acc.max : newAccX - this.Acc.inc;
+				break;
+				case Action.matchRight.test(this.latch):
+					newAccX = (newAccX + this.Acc.inc > this.Acc.max) ? this.Acc.max : newAccX + this.Acc.inc;
+				break;
+				case Action.matchUp.test(this.latch):
+					newAccY = (Math.abs(newAccY - this.Acc.inc) > this.Acc.max) ? -1* this.Acc.max : newAccY - this.Acc.inc;
+				break;
+				case Action.matchDown.test(this.latch):
+					newAccY = (newAccY + this.Acc.inc > this.Acc.max) ? this.Acc.max : newAccY + this.Acc.inc;
+				break;
 			}
-			// don't go off the screen to the right
-			if (xpx > Shared.canvas.width) {
-				return;
-			}
-
-			// before we move, peek at where we're going
-			var touchTypes = this.getEnvMap(xpx, this.loc.ypx);
-
-			// if we're going to hit a wall, don't allow the movement
-			if (this.checkIfCollision(touchTypes)) {
-				return;
-			}
-
-			// if we've passed all our checks, move us
-			this.setXPx(xpx);
-		},
-
-		setXPx: function(xpx) {
-			this.loc.xpx = xpx;
-			// update the xt (x tile) based on the updated xpx (x pixel)
-			this.loc.xt = ((this.loc.xpx + (Level.getTileWidth() >> 1)) /
-				(Level.getTileWidth())) >> 0;
-		},
-
-		attemptSetYPx: function(ypx) {
-			var touchTypes, currentType;
-
-			// before we move, peek at where we're going
-			touchTypes = this.getEnvMap(this.loc.xpx, ypx);
-
-			// if it's to a wall, stop here, we can't move
-			if (this.checkIfCollision(touchTypes)) {
-				return;
-			}
-
-			// we move up/down if we're moving to MOAR ladder
-			if (this.checkIfLadder(touchTypes)) {
-				this.setYPx(ypx);
-				// also center the xpx as we're going up the ladder
-				this.setXPx(this.centerJustifyXPx(this.loc.xt));
-				return;
-			}
-
-			// or we're on the last rung, moving up
-			currentType = Level.getTileTypeAtPosition(this.loc.xt,
-				this.computeYT(this.loc.ypx + Level.getTileHeight()));
-			// verify we're on a ladder
-			if (Level.ladderTypes.indexOf(currentType) > -1) {
-				// verify we're attempting to move up
-				if (this.loc.ypx > ypx) {
-					// WAIT! This is a potential WIN scenario
-					// if this is a win ladder, we've WON!
-					if (currentType === "exit") {
-						// TODO make this prettier
-						console.log("YOU WON!");
-						setTimeout(function() {
-							location.reload();
-						}, 1000);
-					}
-					// move us up!
-					this.setYPx(ypx);
-				}
-			}
-
-			// OR... or... yeah... "or" ONE MORE TIME!
-			// if yer on one of them rope things and you
-			// wanna move down off of it, you can
-			if (this.checkIfRope(touchTypes)) {
-				// verify we're trying to move down
-				if (this.loc.ypx < ypx) {
-					// move us down by one (this will probably cause us pain later...)
-					this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
-				}
-			}
-		},
-
-		setYPx: function(ypx) {
-			this.loc.ypx = ypx;
-			// update the yt (y tile) based on the updated ypx (y pixel)
-			this.loc.yt = ((this.loc.ypx + (Level.getTileHeight() >> 1)) /
-				(Level.getTileHeight())) >> 0;
-		},
-
-		centerJustifyXPx: function(xt) {
-			// based off the xt, return the center xpx
-			var center = (xt * Level.getTileWidth()) - (Level.getTileWidth >> 1);
-			return center;
-		},
-
-		checkIfCollision: function(touchTypes) {
-			return this.checkIfInTypes(touchTypes, Level.collisionTypes);
-		},
-
-		checkIfLadder: function(touchTypes) {
-			return this.checkIfInTypes(touchTypes, Level.ladderTypes);
-		},
-
-		checkIfRope: function(touchTypes) {
-			return this.checkIfInTypes(touchTypes, ["rope"]);
-		},
-
-		checkIfInTypes: function(touchTypes, verifyTypes) {
-			var counter;
-			var touchTypesContainsAVerifyType = false;
-
-			// check if the touch types contain something in verifyTypes
-			if (touchTypes && touchTypes.length > 0) {
-				for (counter=0; counter<touchTypes.length; counter++) {
-					if (verifyTypes.indexOf(touchTypes[counter]) != -1) {
-						touchTypesContainsAVerifyType = true;
-						break;
-					}
-				}
-			}
-
-			return touchTypesContainsAVerifyType;
-		},
-
-		getEnvMap: function(newXPX, newYPX) {
-			var topLeft, topRight, bottomLeft, bottomRight,
-				typeTopLeft, typeTopRight, typeBottomLeft, typeBottomRight, retArray;
-
-			topLeft = {
-				x: newXPX,
-				y: newYPX
-			};
-			topRight = {
-				x: newXPX + Level.getTileWidth() - 1,
-				y: newYPX
-			};
-			bottomLeft = {
-				x: newXPX,
-				y: newYPX + Level.getTileHeight() - 1
-			};
-			bottomRight = {
-				x: newXPX + Level.getTileWidth() - 1,
-				y: newYPX + Level.getTileHeight() - 1
-			};
-
-			// we need to return something... what to do... what to do...
-			// I think for now let's return a list of the type of things
-			// we hit, ignoring the location. I'm not sure that's important (yet)
-			retArray = [];
-
-			typeTopLeft = Level.getTileTypeAtPosition(this.computeXT(topLeft.x), this.computeYT(topLeft.y));
-			if (typeTopLeft) {
-				retArray.push(typeTopLeft);
-				//console.log("I'm going to touch a " + typeTopLeft + " tl");
-			}
-			typeTopRight = Level.getTileTypeAtPosition(this.computeXT(topRight.x), this.computeYT(topRight.y));
-			if (typeTopRight) {
-				retArray.push(typeTopRight);
-				//console.log("I'm going to touch a " + typeTopRight + " tr");
-			}
-			typeBottomLeft = Level.getTileTypeAtPosition(this.computeXT(bottomLeft.x), this.computeYT(bottomLeft.y));
-			if (typeBottomLeft) {
-				retArray.push(typeBottomLeft);
-				//console.log("I'm going to touch a " + typeBottomLeft + " bl");
-			}
-			typeBottomRight = Level.getTileTypeAtPosition(this.computeXT(bottomRight.x), this.computeYT(bottomRight.y));
-			if (typeBottomRight) {
-				retArray.push(typeBottomRight);
-				//console.log("I'm going to touch a " + typeBottomRight + " br");
-			}
-
-			return retArray;
-		},
-
-		computeXT: function(xpx) {
-			return (xpx / Level.getTileWidth()) >> 0;
-		},
-
-		computeYT: function(ypx) {
-			return (ypx / Level.getTileHeight()) >> 0;
-		},
 		
-		gravity: function() {
-			var touchTypes, touchType;
+			currTiles = Level.getTileMap(this.loc.xt, this.loc.yt);
+			newLocPx.x = this.loc.xpx + newAccX;
+			newLocPx.y = this.loc.ypx + newAccY;
+			newLoc = this.tileLocFromPx(newLocPx.x, newLocPx.y);
+			nextTiles = Level.getTileMap(newLoc.x, newLoc.y);
+			
+			//-- Now we have established the player's intent + some initial state, now run rules and augment values
+			//-- animation will be inferred by state and direction of acceleration
+			
+			// movement
+			switch (this.state) {
+				case this.States.climbing:
+					// top of ladder
+					if ((!currTiles[4] || !TypeMatch.ladder.test(currTiles[4].type))) {
+						// there's not a ladder below us, or there is but we aren't trying to go down
+						if (currTiles[4] && !TypeMatch.ladder.test(currTiles[7].type) && Math.abs(newAccX) === 0  || newAccY <= 0) {
+							this.setState(this.States.still);
+							this.vertAlign();
+						}
+					} else {
+						// at bottom of ladder
+						if (currTiles[7] && TypeMatch.collision.test(currTiles[7].type) && newAccY > 0) {
+							newAccY = 0;
+							this.vertAlign();
+							this.setState(this.States.still);
+						} else {
+							// still climbing
+							if (Math.abs(newAccX) > 0) {
+								newAccX = 0;
+							}
+							this.horizAlign();
+						}
+						
+						// check for win - top of exit ladder
+						if (currTiles[4] && currTiles[4].type === 'exit' && !currTiles[1]) {
+							this.setState(this.States.winning);
+						}
+					}
 
-			// get the touch types below us
-			touchTypes = this.getEnvMap(this.loc.xpx, this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
-
-			// if it's a collision, or it's a ladder, no gravity!!
-			if (this.checkIfCollision(touchTypes) || this.checkIfLadder(touchTypes)) {
-				return;
+				break;
+				case this.States.roping:
+					// GOTO FALLING
+					if (newAccY > 0 || (!currTiles[4] && !currTiles[7])) {
+						this.setState(this.States.falling);
+					} else {
+						this.vertAlign();
+						newAccY = 0;
+						// GOTO STILL
+						if (currTiles[7] && TypeMatch.collision.test(currTiles[7].type)) {
+							// back on solid ground
+							this.setState(this.States.still);
+						}
+					}
+				break;
+				// mmmmmeaty. You can do a lot when going from one of these states
+				case this.States.running:
+				case this.States.still:
+					if (Math.abs(newAccY) > 0) {
+						// GOTO CLIMBING
+						// on ladder 
+						if (currTiles[4] && TypeMatch.ladder.test(currTiles[4].type)) {
+							// bottom of ladder + trying to go down
+							if (currTiles[7] && TypeMatch.collision.test(currTiles[7].type) && newAccY > 0) {
+								newAccY = 0;
+							} else {
+								this.setState(this.States.climbing);
+							}
+						// or ladder directly below and not on a ladder
+						} else if (currTiles[7] && TypeMatch.ladder.test(currTiles[7].type) && newAccY > 0) {
+								this.setState(this.States.climbing);
+						} else {
+							newAccY = 0;
+						}
+					} else {
+						if (Action.matchDig.test(this.latch)) {
+							this.setState(this.States.digging);
+							(Action.matchDigLeft.test(this.latch)) ? this.doDig('left') : this.doDig('right');
+						} else {
+							// no Y - check X
+							if (Math.abs(newAccX) > 0) {
+								// GOTO ROPING
+								if ((nextTiles[4] && nextTiles[4].type === 'rope' || (currTiles[4] && currTiles[4].type === 'rope'))) {
+									this.setState(this.States.roping);
+								}
+								// GOTO FALLING
+								else if (!nextTiles[7]) {
+									// next tile below is blank!
+									this.setState(this.States.falling);
+									// nudge him a bit - duct tape for falling into platform bug
+									newAccX *= 1.3;
+								// RUNNING 
+								} else  {
+									this.setState(this.States.running);
+									this.vertAlign();
+									// Canvas boundary check
+									if (newLocPx.x <= 0 || newLocPx.x >= Shared.canvas.width - Level.tileWidth) {
+										newAccX = 0;
+									}
+								}
+							// GOTO STILL
+							} else {
+								this.setState(this.States.still);
+							}
+						}
+					}
+				break;
+				case this.States.digging:
+					// can't move while digging - subclass kicks state back
+					newAccY = 0;
+					newAccX = 0;
+					//this.vertAlign();
+				break;
+				case this.States.falling:
+					// GOTO STILL
+					// about to hit solid tile
+					if (nextTiles[4] && TypeMatch.fallstop.test(nextTiles[4].type)) {
+						this.setState(this.States.still);
+						newAccY = 0;
+						this.vertAlign();
+					}  else {
+						// continue falling
+						newAccY = (newAccY + this.Acc.gravity <= this.Acc.maxGravity) ? newAccY + this.Acc.gravity : this.Acc.maxGravity;
+						newAccX = 0;
+						// GOTO ROPING
+						//    fell into a rope                                  not the same rope
+						if (currTiles[4] && currTiles[4].type === 'rope' && this.loc.yt !== this.lastLoc.yt) {
+							this.setState(this.States.roping);
+							newAccY = 0; // stop the fallin'
+						} 
+					}
+				break;
+				case this.States.holed:
+					newAccY = 0;
+					newAccX = 0;
+					this.vertAlign();
+					this.horizAlign();
+				break;
+				// implement in player/guard
+				case this.States.dying: 
+				case this.States.dead: 
+				case this.States.winning:
+				case this.States.finished:
+					
+				break;
 			}
-
-			// get the touch type above us
-			touchType = Level.getTileTypeAtPosition(this.computeXT(this.loc.xpx), this.computeYT(this.loc.ypx));
-
-			// if there's a rope above us, and we're at the TOP of this tile, no gravity!
-			if (touchType && touchType === "rope") {
-				// are we at the top of this tile?
-				if ((this.loc.ypx % Level.getTileHeight()) === 0) {
-					// no gravity
-					return;
+			
+			// reset based on amendment
+			newLocPx.x = this.loc.xpx + newAccX;
+			newLocPx.y = this.loc.ypx + newAccY;
+			newLoc = this.tileLocFromPx(newLocPx.x, newLocPx.y);
+			
+			this.accX = newAccX;
+			this.accY = newAccY;
+			this.doDecel();
+			this.setLocPx(newLocPx.x, newLocPx.y);
+	
+			this.touching = [];		
+			for (i=0; i<Shared.entities.length; i++) {
+				if (Shared.entities[i].loc.xt === this.loc.xt && Shared.entities[i].loc.yt === this.loc.yt) {
+					this.touching.push(Shared.entities[i]);
+					if (Shared.entities[i].props.type === 'hole') {
+						this.setState(this.States.holed);
+						Level.holeOccupied(this.loc.xt, this.loc.yt);
+					}
 				}
 			}
+			this.latch = ""; // clear movement latch
+		},
 
-			// otherwise, gravity!!
-			this.setYPx(this.loc.ypx + PIXEL_MOVEMENT_AMOUNT);
-		}
+
 	});
 
 	return ret;
