@@ -14,6 +14,8 @@ define([], function(){
 		,   a:        65
 		,   s:        83
 		,   d:        68
+		,   q:        81
+		,   e:        69
 		}
 	,   latch    = {} // currently pressed keys
 	,   on       = {} // key -> function map
