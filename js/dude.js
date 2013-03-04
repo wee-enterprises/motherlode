@@ -1,8 +1,8 @@
 define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Hole) {
 	var TypeMatch = {
 			ladder: /ladder|exit/,
-			fallstop: /wall|bedrock|ladder|occupied/,
-			collision: /wall|bedrock|occupied/
+			fallstop: /wall|bedrock|ladder|guard/,
+			collision: /wall|bedrock|guard/
 		},
 		TouchTypes = ['guard', 'gold', 'player'], // entities that are interesting when I touch them =X
 		Action = {
@@ -93,21 +93,20 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			this.lastState = this.state;
 			this.state = state;
 		},
-		reset: function () {
-		},
 		doDig: function (dir) {
 			var hole = {
 				y: this.loc.yt + 1
 			};
 			hole.x = (dir === 'left') ? this.loc.xt - 1 : this.loc.xt + 1;
 			Level.createHole(hole.x, hole.y);
-			Shared.entities.push(new Hole({
+			/*Shared.entities.push(new Hole({
 				xt: hole.x,
 				yt: hole.y,
 				props: {
 					type: "hole"
 				}
 			}));
+			*/
 		},
 		doDecel: function name(args) {
 			if (!Action.matchLateral.test(this.latch)) {
@@ -142,11 +141,10 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			,   newAccY = this.accY
 			,   currTiles = []
 			,   nextTiles = []
+			,   stepOnEnt = null
 			,   i         = 0
 			;
 			
-			this.reset();
-
 			switch (true) {
 				case Action.matchLeft.test(this.latch):
 					newAccX = (Math.abs(newAccX - this.Acc.inc) > this.Acc.max) ? -1* this.Acc.max : newAccX - this.Acc.inc;
@@ -167,6 +165,10 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			newLocPx.y = this.loc.ypx + newAccY;
 			newLoc = this.tileLocFromPx(newLocPx.x, newLocPx.y);
 			nextTiles = Level.getTileMap(newLoc.x, newLoc.y);
+			
+			stepOnEnt = Shared.getEntityAt(newLoc.x, newLoc.y + 1);
+			
+			stepOnEnt && stepOnEnt.props && console.log(stepOnEnt.props.type, currTiles[7]);
 			
 			//-- Now we have established the player's intent + some initial state, now run rules and augment values
 			//-- animation will be inferred by state and direction of acceleration
@@ -247,7 +249,7 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 									this.setState(this.States.roping);
 								}
 								// GOTO FALLING
-								else if (!nextTiles[7]) {
+								else if (!nextTiles[7] && (!stepOnEnt || (stepOnEnt.props && stepOnEnt.props.type !== 'guard'))) {
 									// next tile below is blank!
 									this.setState(this.States.falling);
 									// nudge him a bit - duct tape for falling into platform bug
@@ -256,8 +258,9 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 								} else  {
 									this.setState(this.States.running);
 									this.vertAlign();
-									// Canvas boundary check
-									if (newLocPx.x <= 0 || newLocPx.x >= Shared.canvas.width - Level.tileWidth) {
+									// Canvas boundary check and general collision
+									if ((newLocPx.x <= 0 || newLocPx.x >= Shared.canvas.width - Level.tileWidth)
+										|| (nextTiles[4] && TypeMatch.collision.test(nextTiles[4].type))) {
 										newAccX = 0;
 									}
 								}
@@ -295,9 +298,9 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 				break;
 				case this.States.holed:
 					newAccY = 0;
-					newAccX = 0;
+					//newAccX = 0;
 					this.vertAlign();
-					this.horizAlign();
+					//this.horizAlign();
 				break;
 				// implement in player/guard
 				case this.States.dying: 
@@ -323,8 +326,8 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 				if (Shared.entities[i].loc.xt === this.loc.xt && Shared.entities[i].loc.yt === this.loc.yt) {
 					this.touching.push(Shared.entities[i]);
 					if (Shared.entities[i].props.type === 'hole') {
-						this.setState(this.States.holed);
-						Level.holeOccupied(this.loc.xt, this.loc.yt);
+						//this.setState(this.States.holed);
+						//Level.holeOccupied(this.loc.xt, this.loc.yt);
 					}
 				}
 			}
