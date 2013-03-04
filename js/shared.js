@@ -35,7 +35,7 @@ define(['howler'], function(Howl) {
    
   //-- set the volume
   for (i in ret.sounds) {
-	ret.sounds[i].volume(.02);
+	ret.sounds[i].volume(.09);
   }
   
   // add canvas
@@ -81,6 +81,21 @@ define(['howler'], function(Howl) {
 		ret.goldCount --;
 	  }
 	}
+  };
+  
+  ret.getEntityAt = function (xt, yt) {
+	var i = 0
+	,   entity = null
+	;
+	
+	for (i = 0; i<ret.entities.length; i++) {
+	  if (ret.entities[i].loc.xt === xt && ret.entities[i].loc.yt === yt) {
+		entity = ret.entities[i];
+		break;
+	  }
+	}
+	
+	return entity;
   };
 
   // http://www.html5rocks.com/en/tutorials/games/assetmanager/

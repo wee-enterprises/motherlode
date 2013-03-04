@@ -47,7 +47,7 @@ define(['dude', 'shared', 'anim'], function(Dude, Shared, Anim) {
 	  } else if(this.accX < 0){
 		this.animFlip = true;
 	  }							  
-	  //console.log(this.lastState + "->" + this.state);
+	  console.log(this.lastState + "->" + this.state);
 	  //console.log(this.lastLoc.xt + "->" + this.loc.xt + ", " + this.lastLoc.yt + "->" + this.loc.yt);
 	}
   });
