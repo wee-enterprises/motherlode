@@ -146,7 +146,7 @@ define(
 		}
 	};
 	
-	ret.removeHole = function (xt, yt) {
+	ret.fillHole = function (xt, yt) {
 	  
 	};
 	
