@@ -2,6 +2,7 @@ define(['dude', 'shared', 'anim', 'level'], function(Dude, Shared, Anim, Level) 
   var ret = Dude.extend({
 	init: function(params) {
 	  this._super(params);
+
 	  this.spriteSheet = Shared.assets['img/player.png'];
 	  this.addAnim("right", new Anim(this.spriteSheet, {x: 16, y: 16}, [8,8,8,8,8,8], function(){}));
 	  this.currAnim = "right";
@@ -16,7 +17,9 @@ define(['dude', 'shared', 'anim', 'level'], function(Dude, Shared, Anim, Level) 
 	  });
 	},
 	update: function (params) {
-	  var ladderNearPlayer = null;
+	  var ladderNearPlayer = null
+	  ,   i = 0
+	  ;
 	  
 	  // AI before rules - super runs rules
 	  if (this.loc.yt !== Shared.player.loc.yt) {
@@ -41,7 +44,21 @@ define(['dude', 'shared', 'anim', 'level'], function(Dude, Shared, Anim, Level) 
 	  
 	  this._super(params);
 	  
-
+	  if (this.state === this.States.dead) {
+		this.setLocTile(this.spawnLoc.xt, this.spawnLoc.yt);
+		this.setState(this.States.still);
+		Shared.sounds.holeyDeath.play();
+	  }
+	  
+	  if (this.touching.length > 0) {
+		for (i=0; i<this.touching.length; i++) {
+		  curr = this.touching[i];
+			if (curr.props.type === 'hole') {
+				this.setState(this.States.holed);
+			}		  
+		}
+	  }
+	  
 	}
   });
   

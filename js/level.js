@@ -135,29 +135,16 @@ define(
 		,   props = currTileProps[tile-1]
 		;
 		
-		if (props && props.type !== 'bedrock') {
-			console.log('makin a hole at ' + xt + ', ' + yt);
+		if (props && props.type === 'wall') {
 			setLvlData(xt, yt, 0);
-			holes.push({
-				xt: xt,
-				yt: yt,
-				occupied: false
-			});
+			return true;
 		}
+		return false;
 	};
 	
-	ret.fillHole = function (xt, yt) {
-	  
-	};
-	
-	ret.holeOccupied = function (xt, yt) {
-		var i = 0;
-		for (i = 0; i<holes.length; i++) {
-			if (holes[i].xt === xt && holes[i].yt === yt) {
-				holes[i].occupied = true;
-				setLvlData(xt, yt, occupiedRef);
-			}
-		}
+	ret.sealHoleAt = function (xt, yt) {
+	  //console.log("fillin the hole in the level at " + xt + ", " + yt);
+	  setLvlData(xt, yt, filledHoleRef);
 	};
 	
 	// scan horizontal for nearest ladder
