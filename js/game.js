@@ -31,11 +31,7 @@ define('game',
 	  'animSprite'
    ],
 function(Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
-   var ret     = {}
-   ,   player  = null
-   ,   guards  = []
-   ,   torches = []
-   ;
+   var ret     = {};
 
    function initLevel(lvl) {
 	  Level.setLevel(lvl);
@@ -94,7 +90,7 @@ function(Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
 	 if(Wee.paused()) {
 		 Wee.start();
 	 }
-	 //Shared.sounds.level.pause(); // try to prevent duplication 
+	 Shared.sounds.level.pause().play(); // try to prevent duplication 
 	 //Shared.sounds.level.play();
    }, false);
 
@@ -126,7 +122,7 @@ function(Shared, Wee, Keys, Level, Player, Guard, AnimSprite) {
 		 'img/torch.png'
 	  ],
 	  function(){
-		 //Shared.sounds.level.play();
+		 Shared.sounds.level.play();
 		 initLevel(0);
 		 
 		 Wee.setRender(function() {
