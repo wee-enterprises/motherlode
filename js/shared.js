@@ -27,6 +27,15 @@ define(['howler'], function(Howl) {
 	die: new Howl({
 	  urls: ['sound/die.ogg', 'sound/die.mp3']
 	}),
+	holeyDeath: new Howl({
+	  urls: ['sound/guard_death.ogg', 'sound/guard_death.mp3']
+	}),
+	playerDeath: new Howl({
+	  urls: ['sound/player_death.ogg', 'sound/player_death.mp3']
+	}),
+	dig: new Howl({
+	  urls: ['sound/dig.ogg', 'sound/dig.mp3']
+	}),
 	level: new Howl({
 	  urls: ['sound/DST-GreenSky.ogg', 'sound/DST-GreenSky.mp3'],
 	  loop: true
@@ -35,7 +44,11 @@ define(['howler'], function(Howl) {
    
   //-- set the volume
   for (i in ret.sounds) {
-	ret.sounds[i].volume(.09);
+	if (i === 'level') {
+	  ret.sounds[i].volume(.08);
+	  continue;
+	}
+	ret.sounds[i].volume(.03);
   }
   
   // add canvas
@@ -96,6 +109,30 @@ define(['howler'], function(Howl) {
 	}
 	
 	return entity;
+  };
+  
+  ret.removeEntityAt = function (xt, yt, type) {
+	var i = 0;
+	
+	for (i = 0; i<ret.entities.length; i++) {
+	  if (ret.entities[i].loc.xt === xt && ret.entities[i].loc.yt === yt) {
+		//console.log(ret.entities[i]);
+		if (!type || (!ret.entities[i].props || ret.entities[i].props.type !== type)) {
+		  continue;
+		}
+		ret.entities[i] = undefined;
+		ret.entities.splice(i, 1);
+		return true;
+	  }
+	}
+	
+	return false;
+  };
+  
+  // kinda weird - the hole entity itself removes the shared reference ... hopefully to be garbage collected
+  ret.sealHoleAt = function (xt, yt) {
+	//console.log("destroying hole entity at " + xt + ", " + yt);
+	ret.removeEntityAt(xt, yt, 'hole');
   };
 
   // http://www.html5rocks.com/en/tutorials/games/assetmanager/

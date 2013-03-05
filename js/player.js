@@ -7,7 +7,10 @@ define(['dude', 'shared', 'anim'], function(Dude, Shared, Anim) {
 	  this.touchTypes = ['guard', 'gold']; // interesting when touched
 	  this.addAnim("running", new Anim(this.spriteSheet, {x: 16, y: 16}, [3,3,3,3,3,3,3,3,3,3,3], function(){}));
 	  this.addAnim("roping", new Anim(this.spriteSheet, {x: 16, y: 16}, [12,12,12,12,12,12,12,12,12,12,12], function(){}));
-	  this.addAnim("digging", new Anim(this.spriteSheet, {x: 16, y: 16}, [3,3,3,3,3,3,3,3,3,3,3], function(){me.setState(me.States.still);}));
+	  this.addAnim("digging", new Anim(this.spriteSheet, {x: 16, y: 16}, [3,3,3,3,3,3,3,3,3,3,3], function(){
+		me.doDig.apply(me);
+		me.setState(me.States.still);
+	  }));
 	  this.currAnim = "running";
 	  this.defaultAnim = "running";
 	},
@@ -36,6 +39,15 @@ define(['dude', 'shared', 'anim'], function(Dude, Shared, Anim) {
 	  
 	  // animation
 	  switch (this.state) {
+		case this.States.digLeft:
+		case this.States.digRight:
+		  this.currAnim = "digging";
+		break;
+		case this.States.dead:
+		  this.setLocTile(this.spawnLoc.xt, this.spawnLoc.yt);
+		  this.setState(this.States.still);
+		  Shared.sounds.playerDeath.play();
+		break;
 		default:
 		  this.currAnim = this.state;
 		break;
@@ -47,7 +59,8 @@ define(['dude', 'shared', 'anim'], function(Dude, Shared, Anim) {
 	  } else if(this.accX < 0){
 		this.animFlip = true;
 	  }							  
-	  console.log(this.lastState + "->" + this.state);
+	  //console.log("state -> "+this.state);
+	  //console.log(this.lastState + "->" + this.state);
 	  //console.log(this.lastLoc.xt + "->" + this.loc.xt + ", " + this.lastLoc.yt + "->" + this.loc.yt);
 	}
   });

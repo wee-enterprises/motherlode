@@ -4,7 +4,6 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			fallstop: /wall|bedrock|ladder|guard/,
 			collision: /wall|bedrock|guard/
 		},
-		TouchTypes = ['guard', 'gold', 'player'], // entities that are interesting when I touch them =X
 		Action = {
 			//null: "not moving"
 			left: "left",
@@ -19,11 +18,11 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			matchLateral: /left|right/,
 			matchVertical: /up|down/,
 			
-			digLeft: "digLeft",
-			matchDigLeft: /digLeft/,
-			digRight: "digRight",
-			matchDigRight: /digRight/,
-			matchDig: /dig/
+			digLeft: "diggingLeft",
+			matchDigLeft: /diggingLeft/,
+			digRight: "diggingRight",
+			matchDigRight: /diggingRight/,
+			matchDig: /digging/
 		},
 	    Boundary = { // based on top-left of sprite
 			left:  3,
@@ -36,6 +35,11 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 		init: function(params) {
 			params.bounds = Boundary;
 			this._super(params);
+			
+			this.spawnLoc = {
+				xt: params.xt,
+				yt: params.yt
+			};
 			this.latch     = ""; // movement latch
 			this.accX      = 0;
 			this.accY      = 0;
@@ -47,7 +51,8 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 				climbing: 'climbing',
 				running: 'running',
 				roping: 'roping',
-				digging: 'digging',
+				digLeft: 'diggingLeft',
+				digRight: 'diggingRight',
 				falling: 'falling',
 				holed: 'holed',
 				still: 'still',
@@ -93,20 +98,24 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			this.lastState = this.state;
 			this.state = state;
 		},
-		doDig: function (dir) {
+		doDig: function () {
 			var hole = {
 				y: this.loc.yt + 1
 			};
-			hole.x = (dir === 'left') ? this.loc.xt - 1 : this.loc.xt + 1;
-			Level.createHole(hole.x, hole.y);
-			/*Shared.entities.push(new Hole({
-				xt: hole.x,
-				yt: hole.y,
-				props: {
-					type: "hole"
-				}
-			}));
-			*/
+			hole.x = (Action.matchDigLeft.test(this.state)) ? this.loc.xt - 1 : this.loc.xt + 1;
+			if(Level.createHole(hole.x, hole.y)) {
+				console.log('makin a hole at ' + hole.x + ', ' + hole.y);
+				Shared.entities.push(new Hole({
+					xt: hole.x,
+					yt: hole.y,
+					props: {
+						type: "hole"
+					}
+				}));
+			} else {
+				console.log('CANT make a hole at ' + hole.x + ', ' + hole.y);
+			}
+			
 		},
 		doDecel: function name(args) {
 			if (!Action.matchLateral.test(this.latch)) {
@@ -168,8 +177,12 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			
 			stepOnEnt = Shared.getEntityAt(newLoc.x, newLoc.y + 1);
 			
-			stepOnEnt && stepOnEnt.props && console.log(stepOnEnt.props.type, currTiles[7]);
+			//stepOnEnt && stepOnEnt.props && console.log(stepOnEnt.props.type, currTiles[7]);
 			
+			// holey death
+			if (currTiles[4] && currTiles[4].type === 'wall') {
+				this.setState(this.States.dead);
+			}
 			//-- Now we have established the player's intent + some initial state, now run rules and augment values
 			//-- animation will be inferred by state and direction of acceleration
 			
@@ -239,8 +252,9 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 						}
 					} else {
 						if (Action.matchDig.test(this.latch)) {
-							this.setState(this.States.digging);
-							(Action.matchDigLeft.test(this.latch)) ? this.doDig('left') : this.doDig('right');
+							//this.setState(this.States.digging);
+							Shared.sounds.dig.play();
+							(Action.matchDigLeft.test(this.latch)) ? this.setState(this.States.digLeft) : this.setState(this.States.digRight);
 						} else {
 							// no Y - check X
 							if (Math.abs(newAccX) > 0) {
@@ -271,7 +285,8 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 						}
 					}
 				break;
-				case this.States.digging:
+				case this.States.digLeft:
+				case this.States.digRight:
 					// can't move while digging - subclass kicks state back
 					newAccY = 0;
 					newAccX = 0;
@@ -298,13 +313,14 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 				break;
 				case this.States.holed:
 					newAccY = 0;
-					//newAccX = 0;
+					newAccX = 0;
 					this.vertAlign();
-					//this.horizAlign();
+					this.horizAlign();
+				break;
+				case this.States.dead:
 				break;
 				// implement in player/guard
 				case this.States.dying: 
-				case this.States.dead: 
 				case this.States.winning:
 				case this.States.finished:
 					
@@ -325,10 +341,6 @@ define(['entity', 'level', 'shared', 'hole'], function(Entity, Level, Shared, Ho
 			for (i=0; i<Shared.entities.length; i++) {
 				if (Shared.entities[i].loc.xt === this.loc.xt && Shared.entities[i].loc.yt === this.loc.yt) {
 					this.touching.push(Shared.entities[i]);
-					if (Shared.entities[i].props.type === 'hole') {
-						//this.setState(this.States.holed);
-						//Level.holeOccupied(this.loc.xt, this.loc.yt);
-					}
 				}
 			}
 			this.latch = ""; // clear movement latch

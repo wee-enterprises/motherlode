@@ -108,6 +108,13 @@ define(['class', 'level'], function(Class, Level) {
 			// !instanceOf animation - throw && return
 			this.anims[name] = anim;
 		},
+		
+		getAnim: function (name) {
+			if (this.anims[name]) {
+				return this.anims[name];
+			}
+			return undefined;
+		}
 
 
 	});
